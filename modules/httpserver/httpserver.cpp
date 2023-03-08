@@ -46,7 +46,7 @@ void HttpServer::handleNewData()
 
     // build response
     QByteArray responseContent;
-    responseContent += (response->version.isEmpty() ? "HTTP/1.1" : response->version.toUtf8()) + " "; // Version
+    responseContent += (response->version.isEmpty() ? "HTTP/1.1"_qba : response->version.toUtf8()) + " "_qba; // Version
     responseContent += QByteArray::number((qint32)response->status) + " "
             + response->StatusNames.value((qint32)response->status, "").toUtf8() + "\r\n"; // Status
 

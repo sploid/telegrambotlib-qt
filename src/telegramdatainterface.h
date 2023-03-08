@@ -1,11 +1,10 @@
-#ifndef TELEGRAMDATAINTERFACE_H
-#define TELEGRAMDATAINTERFACE_H
+#pragma once
 
 #include "jsonhelper.h"
 
 struct TelegramBotObject
 {
-    virtual void fromJson(QJsonObject& object) = 0;
+    virtual void FromJson(const QJsonObject& object) = 0;
     virtual ~TelegramBotObject() {}
 };
 
@@ -17,7 +16,7 @@ class JsonHelperT<T, typename std::enable_if<std::is_base_of<TelegramBotObject, 
         {
             QJsonObject object = showWarnings ? JsonHelper::jsonPathGet(data, path).toJsonObject() : JsonHelper::jsonPathGetSilent(data, path).toJsonObject();
             if(object.isEmpty()) return false;
-            target.fromJson(object);
+            target.FromJson(object);
             return true;
         }
 
@@ -43,6 +42,3 @@ class JsonHelperT<T, typename std::enable_if<std::is_base_of<TelegramBotObject, 
             return true;
         }
 };
-
-
-#endif // TELEGRAMDATAINTERFACE_H

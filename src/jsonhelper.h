@@ -1,12 +1,8 @@
-#ifndef JSONHELPER_H
-#define JSONHELPER_H
+#pragma once
 
-#include <QVariant>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonArray>
+#include "common.h"
 
-class JsonHelper
+class BOT_EXPORT JsonHelper
 {
     public:
         // main json parser
@@ -40,8 +36,9 @@ class JsonHelperT
             QJsonValue value = showWarnings ? JsonHelper::jsonPathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
             if(value.isArray()) {
                 QJsonArray jArray = value.toArray();
+                int idx{0};
                 for(auto itr = jArray.begin(); itr != jArray.end(); itr++) {
-                    JsonHelper::jsonPathGet(*itr, QString::number(itr.i), *target.insert(target.end(), T{}), showWarnings);
+                    JsonHelper::jsonPathGet(*itr, QString::number(idx++), *target.insert(target.end(), T{}), showWarnings);
                 }
             } else if(value.isObject()) {
                 QJsonObject jObject = value.toObject();
@@ -58,8 +55,9 @@ class JsonHelperT
             QJsonValue value = showWarnings ? JsonHelper::jsonPathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
             if(value.isArray()) {
                 QJsonArray jArray = value.toArray();
+                int idx{0};
                 for(auto itr = jArray.begin(); itr != jArray.end(); itr++) {
-                    JsonHelperT::jsonPathGetArray(*itr, QString::number(itr.i), *target.insert(target.end(), QList<T>()), showWarnings);
+                    JsonHelperT::jsonPathGetArray(*itr, QString::number(idx++), *target.insert(target.end(), QList<T>()), showWarnings);
                 }
             } else if(value.isObject()) {
                 QJsonObject jObject = value.toObject();
@@ -80,5 +78,3 @@ class JsonHelperT
             return JsonHelper::jsonPathGetSilent(data, path);
         }
 };
-
-#endif // JSONHELPER_H

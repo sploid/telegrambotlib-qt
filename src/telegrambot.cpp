@@ -221,7 +221,7 @@ void TelegramBot::editMessageText(QVariant chatId, QVariant messageId, QString t
     }
 
     // determine message id type
-    bool isInlineMessageId = messageId.type() == QVariant::String;
+    bool isInlineMessageId = messageId.metaType() == QMetaType::fromType<QString>();
 
     QUrlQuery params;
     if(!isInlineMessageId && !chatId.isNull()) params.addQueryItem("chat_id", chatId.toString());
@@ -243,7 +243,7 @@ void TelegramBot::editMessageText(QVariant chatId, QVariant messageId, QString t
 void TelegramBot::editMessageCaption(QVariant chatId, QVariant messageId, QString caption, TelegramKeyboardRequest keyboard, bool *response)
 {
     // determine message id type
-    bool isInlineMessageId = messageId.type() == QVariant::String;
+    bool isInlineMessageId = messageId.metaType() == QMetaType::fromType<QString>();
 
     QUrlQuery params;
     if(!isInlineMessageId && !chatId.isNull()) params.addQueryItem("chat_id", chatId.toString());
@@ -260,7 +260,7 @@ void TelegramBot::editMessageCaption(QVariant chatId, QVariant messageId, QStrin
 void TelegramBot::editMessageReplyMarkup(QVariant chatId, QVariant messageId, TelegramKeyboardRequest keyboard, bool *response)
 {
     // determine message id type
-    bool isInlineMessageId = messageId.type() == QVariant::String;
+    bool isInlineMessageId = messageId.metaType() == QMetaType::fromType<QString>();
 
     QUrlQuery params;
     if(!isInlineMessageId && !chatId.isNull()) params.addQueryItem("chat_id", chatId.toString());
@@ -689,13 +689,12 @@ void TelegramBot::parseMessage(QByteArray &data, bool singleMessage)
 
         // parse result
         TelegramBotUpdate updateMessage(new TelegramBotUpdatePrivate);
-        updateMessage->fromJson(update);
+        updateMessage->FromJson(update);
 
         // save update id
-        this->updateId = updateMessage->updateId;
+        updateId = updateMessage->updateId;
 
-        // send Message to outside world
-        emit this->newMessage(updateMessage);
+        Q_EMIT NewMessage(updateMessage);
 
         // call message routes
         QString routeData = updateMessage->inlineQuery          ? updateMessage->inlineQuery->query :
@@ -733,7 +732,7 @@ typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value>::type Tele
 
     // get result and parse it
     QJsonObject object = QJsonObject(this->callApiJson(method, params, multiPart)).value("result").toObject();
-    response->fromJson(object);
+    response->FromJson(object);
 }
 
 template<typename T>
@@ -850,13 +849,13 @@ void TelegramBot::handleReplyMarkup(QUrlQuery& params, TelegramFlags flags, Tele
 QHttpMultiPart* TelegramBot::handleFile(QString fieldName, QVariant file, QUrlQuery &params, QHttpMultiPart* multiPart)
 {
     // handle content
-    if(file.type() == QVariant::ByteArray) {
+    if(file.metaType() == QMetaType::fromType<QByteArray>()) {
         QByteArray content = file.value<QByteArray>();
         multiPart = this->createUploadFile(fieldName, fieldName, content, true, multiPart);
     }
 
     // handle url
-    else if(file.type() == QVariant::String) {
+    else if(file.metaType() == QMetaType::fromType<QString>()) {
         QUrl url = QUrl::fromUserInput(file.toString());
 
         // upload the local file to telegram
