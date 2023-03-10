@@ -539,7 +539,7 @@ void TelegramBot::handlePullResponse()
 
     // parse response
     QByteArray data = this->replyPull->readAll();
-    this->parseMessage(data);
+    parseMessage(data);
 
     // add update id to request
     if(this->updateId) this->pullParams.addQueryItem("offset", QString::number(this->updateId + 1));
@@ -666,58 +666,54 @@ void TelegramBot::messageRouterRegister(QString startWith, QDelegate<bool(Telegr
 /*
  * Reponse Parser
  */
-void TelegramBot::parseMessage(QByteArray &data, bool singleMessage)
-{
-    // parse result
-    QJsonParseError jError;
-    QJsonObject oUpdate = QJsonDocument::fromJson(data, &jError).object();
+void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
+  QJsonParseError jError;
+  const QJsonObject oUpdate = QJsonDocument::fromJson(data, &jError).object();
 
-    // handle parse error
-    if(jError.error != QJsonParseError::NoError) {
-        return (void)qDebug("TelegramBot::parseMessage - Parse Error: %s", qPrintable(jError.errorString()));
+  // handle parse error
+  if (jError.error != QJsonParseError::NoError) {
+    qWarning("TelegramBot::parseMessage - Parse Error: %s", qPrintable(jError.errorString()));
+    return;
+  }
+
+  if (!singleMessage && !JsonHelper::PathGet(oUpdate, u"ok"_qs).toBool()) {
+    qWarning("TelegramBot::parseMessage - Receive Error: %i - %s", JsonHelper::PathGet(oUpdate, "error_code").toInt(),
+             qPrintable(JsonHelper::PathGet(oUpdate, "description").toString()));
+    return;
+  }
+
+  // loop results
+  for (const QJsonValue& result : singleMessage ? QJsonArray({oUpdate}) : oUpdate.value(u"result"_qs).toArray()) {
+    const QJsonObject update = result.toObject();
+
+    TelegramBotUpdate updateMessage(new TelegramBotUpdatePrivate);
+    updateMessage->FromJson(update);
+
+    // save update id
+    updateId = updateMessage->updateId;
+
+    Q_EMIT NewMessage(updateMessage);
+
+    // call message routes
+    const QString routeData = updateMessage->inlineQuery          ? updateMessage->inlineQuery->query :
+                              updateMessage->chosenInlineResult   ? updateMessage->chosenInlineResult->query :
+                              updateMessage->callbackQuery        ? updateMessage->callbackQuery->data :
+                              updateMessage->message              ? updateMessage->message->text : QString();
+    if (routeData.isNull()) continue;
+    for (auto itrRoute = messageRoutes.begin(); itrRoute != messageRoutes.end(); ++itrRoute) {
+      MessageRoute* route = *itrRoute;
+      if (route->type && updateMessage->type != updateMessage->type) continue;
+      if (!routeData.startsWith(route->startWith)) continue;
+      if (!route->delegate.invoke(updateMessage).first()) break;
     }
-
-    if (!singleMessage && !JsonHelper::jsonPathGet(oUpdate, "ok").toBool()) {
-        return (void)qDebug("TelegramBot::parseMessage - Receive Error: %i - %s",
-                            JsonHelper::jsonPathGet(oUpdate, "error_code").toInt(),
-                            qPrintable(JsonHelper::jsonPathGet(oUpdate, "description").toString()));
-    }
-
-    // loop results
-    for(QJsonValue result : singleMessage ? QJsonArray({oUpdate}) : oUpdate.value("result").toArray()) {
-        QJsonObject update = result.toObject();
-
-        // parse result
-        TelegramBotUpdate updateMessage(new TelegramBotUpdatePrivate);
-        updateMessage->FromJson(update);
-
-        // save update id
-        updateId = updateMessage->updateId;
-
-        Q_EMIT NewMessage(updateMessage);
-
-        // call message routes
-        QString routeData = updateMessage->inlineQuery          ? updateMessage->inlineQuery->query :
-                            updateMessage->chosenInlineResult   ? updateMessage->chosenInlineResult->query :
-                            updateMessage->callbackQuery        ? updateMessage->callbackQuery->data :
-                            updateMessage->message              ? updateMessage->message->text : QString();
-        if(routeData.isNull()) continue;
-        for(auto itrRoute = this->messageRoutes.begin(); itrRoute != this->messageRoutes.end(); itrRoute++) {
-            MessageRoute* route = *itrRoute;
-            if(route->type && updateMessage->type != updateMessage->type) continue;
-            if(!routeData.startsWith(route->startWith)) continue;
-            if(!route->delegate.invoke(updateMessage).first()) break;
-        }
-    }
+  }
 }
 
-void TelegramBot::handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response)
-{
-	// parse response
-    this->parseMessage(request->content, true);
+void TelegramBot::handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response) {
+  parseMessage(request->content, true);
 
-	// reply to server with status OK
-    response->status = HttpServerResponsePrivate::OK;
+  // reply to server with status OK
+  response->status = HttpServerResponsePrivate::OK;
 }
 
 

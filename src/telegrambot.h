@@ -119,8 +119,7 @@ private Q_SLOTS:
   void pull();
   void handlePullResponse();
 
-  // parser functions
-  void parseMessage(QByteArray &data, bool singleMessage = false);
+  void parseMessage(const QByteArray& data, bool singleMessage = false);
 
   // webhook functions
   void handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response);

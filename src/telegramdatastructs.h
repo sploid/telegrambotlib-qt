@@ -64,9 +64,9 @@ struct TelegramBotOperationResult : public TelegramBotObject {
 
   // parse logic
   void FromJson(const QJsonObject& object) override {
-      JsonHelperT<bool>::jsonPathGet(object, u"result"_qs, result);
-      JsonHelperT<qint32>::jsonPathGet(object, u"error_code"_qs, errorCode, false);
-      JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description);
+      JsonHelperT<bool>::PathGet(object, u"result"_qs, result);
+      JsonHelperT<qint32>::PathGet(object, u"error_code"_qs, errorCode, false);
+      JsonHelperT<QString>::PathGet(object, u"description"_qs, description);
   }
 };
 
@@ -83,12 +83,12 @@ struct TelegramBotWebHookInfo : public TelegramBotObject {
   TelegramBotWebHookInfo(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"url"_qs, url);
-    JsonHelperT<bool>::jsonPathGet(object, u"has_custom_certificate"_qs, hasCustomCertificate);
-    JsonHelperT<bool>::jsonPathGet(object, u"pending_update_count"_qs, pendingUpdateCount);
-    JsonHelperT<qint32>::jsonPathGet(object, u"last_error_date"_qs, lastErrorDate, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_error_message"_qs, lastErrorMessage, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"max_connections"_qs, maxConnections, false);
+    JsonHelperT<QString>::PathGet(object, u"url"_qs, url);
+    JsonHelperT<bool>::PathGet(object, u"has_custom_certificate"_qs, hasCustomCertificate);
+    JsonHelperT<bool>::PathGet(object, u"pending_update_count"_qs, pendingUpdateCount);
+    JsonHelperT<qint32>::PathGet(object, u"last_error_date"_qs, lastErrorDate, false);
+    JsonHelperT<QString>::PathGet(object, u"last_error_message"_qs, lastErrorMessage, false);
+    JsonHelperT<qint32>::PathGet(object, u"max_connections"_qs, maxConnections, false);
     JsonHelperT<QString>::jsonPathGetArray(object, u"allowed_updates"_qs, allowedUpdates, false);
   }
 };
@@ -100,6 +100,7 @@ struct TelegramBotWebHookInfo : public TelegramBotObject {
 // TelegramBotUser - This object represents a Telegram user or bot.
 struct TelegramBotUser : public TelegramBotObject {
   qint32 id; // Unique identifier for this user or bot
+  bool is_bot{false};
   QString firstName; // User‘s or bot’s first name
   QString lastName; // Optional. User‘s or bot’s last name
   QString username; // Optional. User‘s or bot’s username
@@ -109,11 +110,12 @@ struct TelegramBotUser : public TelegramBotObject {
   TelegramBotUser(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<qint32>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"first_name"_qs, firstName);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_name"_qs, lastName, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"username"_qs, username, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"language_code"_qs, languageCode, false);
+    JsonHelperT<qint32>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<bool>::PathGet(object, u"is_bot"_qs, is_bot);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<QString>::PathGet(object, u"username"_qs, username, false);
+    JsonHelperT<QString>::PathGet(object, u"language_code"_qs, languageCode, false);
   }
 };
 
@@ -124,13 +126,14 @@ struct TelegramBotMessageEntity : public TelegramBotObject {
   qint32 length; // Length of the entity in UTF-16 code units
   QString url; // Optional. For “text_link” only, url that will be opened after user taps on the text
   TelegramBotUser user; // Optional. For “text_mention” only, the mentioned user
+  bool IsCommand() const { return type.compare(u"bot_command"_qs, Qt::CaseInsensitive) == 0; }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<qint32>::jsonPathGet(object, u"offset"_qs, offset);
-    JsonHelperT<qint32>::jsonPathGet(object, u"length"_qs, length);
-    JsonHelperT<QString>::jsonPathGet(object, u"url"_qs, url, false);
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"user"_qs, user, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<qint32>::PathGet(object, u"offset"_qs, offset);
+    JsonHelperT<qint32>::PathGet(object, u"length"_qs, length);
+    JsonHelperT<QString>::PathGet(object, u"url"_qs, url, false);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"user"_qs, user, false);
   }
 };
 
@@ -142,10 +145,10 @@ struct TelegramBotPhotoSize : public TelegramBotObject {
   qint32 fileSize; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"width"_qs, width);
-    JsonHelperT<qint32>::jsonPathGet(object, u"height"_qs, height);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"width"_qs, width);
+    JsonHelperT<qint32>::PathGet(object, u"height"_qs, height);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -158,11 +161,11 @@ struct TelegramBotAnimation : public TelegramBotObject {
   qint32 fileSize; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<TelegramBotPhotoSize>::jsonPathGet(object, u"thumb"_qs, thumb, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"file_name"_qs, fileName, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<TelegramBotPhotoSize>::PathGet(object, u"thumb"_qs, thumb, false);
+    JsonHelperT<QString>::PathGet(object, u"file_name"_qs, fileName, false);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -176,12 +179,12 @@ struct TelegramBotGame : public TelegramBotObject {
   TelegramBotAnimation animation; // Optional. Animation that will be displayed in the game message in chats. Upload via BotFather
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description);
     JsonHelperT<TelegramBotPhotoSize>::jsonPathGetArray(object, u"photo"_qs, photo);
-    JsonHelperT<QString>::jsonPathGet(object, u"text"_qs, text, false);
+    JsonHelperT<QString>::PathGet(object, u"text"_qs, text, false);
     JsonHelperT<TelegramBotMessageEntity>::jsonPathGetArray(object, u"text_entities"_qs, textEntities, false);
-    JsonHelperT<TelegramBotAnimation>::jsonPathGet(object, u"animation"_qs, animation, false);
+    JsonHelperT<TelegramBotAnimation>::PathGet(object, u"animation"_qs, animation, false);
   }
 };
 
@@ -192,9 +195,9 @@ struct TelegramBotGameHighScore : public TelegramBotObject {
   qint32 score{};
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<qint32>::jsonPathGet(object, u"position"_qs, position);
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"user"_qs, user);
-    JsonHelperT<qint32>::jsonPathGet(object, u"score"_qs, score);
+    JsonHelperT<qint32>::PathGet(object, u"position"_qs, position);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"user"_qs, user);
+    JsonHelperT<qint32>::PathGet(object, u"score"_qs, score);
   }
 };
 
@@ -207,14 +210,14 @@ struct TelegramBotKeyboardButton : public TelegramBotObject {
   TelegramBotGame callbackGame;
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"text"_qs, text);
-    JsonHelperT<QString>::jsonPathGet(object, u"url"_qs, url, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"callback_data"_qs, callbackData, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"switch_inline_query"_qs, switchInlineQuery, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"switch_inline_query_current_chat"_qs, switchInlineQueryCurrentChat, false);
-    JsonHelperT<TelegramBotGame>::jsonPathGet(object, u"callback_game"_qs, callbackGame, false);
-    JsonHelperT<bool>::jsonPathGet(object, u"request_contact"_qs, requestContact, false);
-    JsonHelperT<bool>::jsonPathGet(object, u"request_location"_qs, requestLocation, false);
+    JsonHelperT<QString>::PathGet(object, u"text"_qs, text);
+    JsonHelperT<QString>::PathGet(object, u"url"_qs, url, false);
+    JsonHelperT<QString>::PathGet(object, u"callback_data"_qs, callbackData, false);
+    JsonHelperT<QString>::PathGet(object, u"switch_inline_query"_qs, switchInlineQuery, false);
+    JsonHelperT<QString>::PathGet(object, u"switch_inline_query_current_chat"_qs, switchInlineQueryCurrentChat, false);
+    JsonHelperT<TelegramBotGame>::PathGet(object, u"callback_game"_qs, callbackGame, false);
+    JsonHelperT<bool>::PathGet(object, u"request_contact"_qs, requestContact, false);
+    JsonHelperT<bool>::PathGet(object, u"request_location"_qs, requestLocation, false);
   }
 };
 typedef QList<QList<TelegramBotKeyboardButton>> TelegramKeyboard;
@@ -233,13 +236,13 @@ struct TelegramBotChat : public TelegramBotObject {
   TelegramBotChat(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<qint64>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"username"_qs, username, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"first_name"_qs, firstName, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_name"_qs, lastName, false);
-    JsonHelperT<bool>::jsonPathGet(object, u"all_members_are_administrators"_qs, allMembersAreAdministrators, false);
+    JsonHelperT<qint64>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"username"_qs, username, false);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName, false);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<bool>::PathGet(object, u"all_members_are_administrators"_qs, allMembersAreAdministrators, false);
   }
 };
 
@@ -253,12 +256,12 @@ struct TelegramBotAudio : public TelegramBotObject {
   qint32 fileSize{}; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"duration"_qs, duration);
-    JsonHelperT<QString>::jsonPathGet(object, u"performer"_qs, performer, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"duration"_qs, duration);
+    JsonHelperT<QString>::PathGet(object, u"performer"_qs, performer, false);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -271,11 +274,11 @@ struct TelegramBotDocument : public TelegramBotObject {
   qint32 fileSize{}; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<TelegramBotPhotoSize>::jsonPathGet(object, u"thumb"_qs, thumb, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"file_name"_qs, fileName, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<TelegramBotPhotoSize>::PathGet(object, u"thumb"_qs, thumb, false);
+    JsonHelperT<QString>::PathGet(object, u"file_name"_qs, fileName, false);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -289,12 +292,12 @@ struct TelegramBotSticker : public TelegramBotObject {
   qint32 fileSize{}; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"width"_qs, width);
-    JsonHelperT<qint32>::jsonPathGet(object, u"height"_qs, height);
-    JsonHelperT<TelegramBotPhotoSize>::jsonPathGet(object, u"thumb"_qs, thumb, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"emoji"_qs, emoji, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"width"_qs, width);
+    JsonHelperT<qint32>::PathGet(object, u"height"_qs, height);
+    JsonHelperT<TelegramBotPhotoSize>::PathGet(object, u"thumb"_qs, thumb, false);
+    JsonHelperT<QString>::PathGet(object, u"emoji"_qs, emoji, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -309,13 +312,13 @@ struct TelegramBotVideo : public TelegramBotObject {
   qint32 fileSize{}; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"width"_qs, width);
-    JsonHelperT<qint32>::jsonPathGet(object, u"height"_qs, height);
-    JsonHelperT<qint32>::jsonPathGet(object, u"duration"_qs, duration);
-    JsonHelperT<TelegramBotPhotoSize>::jsonPathGet(object, u"thumb"_qs, thumb, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"width"_qs, width);
+    JsonHelperT<qint32>::PathGet(object, u"height"_qs, height);
+    JsonHelperT<qint32>::PathGet(object, u"duration"_qs, duration);
+    JsonHelperT<TelegramBotPhotoSize>::PathGet(object, u"thumb"_qs, thumb, false);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -327,10 +330,10 @@ struct TelegramBotVoice : public TelegramBotObject {
   qint32 fileSize{}; // Optional. File size
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"duration"_qs, duration);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"duration"_qs, duration);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType, false);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
   }
 };
 
@@ -342,10 +345,10 @@ struct TelegramBotContact : public TelegramBotObject {
   qint32 userId{}; // Optional. Contact's user identifier in Telegram
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"phone_number"_qs, phoneNumber);
-    JsonHelperT<QString>::jsonPathGet(object, u"first_name"_qs, firstName);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_name"_qs, lastName, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"user_id"_qs, userId, false);
+    JsonHelperT<QString>::PathGet(object, u"phone_number"_qs, phoneNumber);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<qint32>::PathGet(object, u"user_id"_qs, userId, false);
   }
 };
 
@@ -355,8 +358,8 @@ struct TelegramBotLocation : public TelegramBotObject {
   double latitude; // Latitude as defined by sender
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<double>::jsonPathGet(object, u"longitude"_qs, longitude);
-    JsonHelperT<double>::jsonPathGet(object, u"latitude"_qs, latitude);
+    JsonHelperT<double>::PathGet(object, u"longitude"_qs, longitude);
+    JsonHelperT<double>::PathGet(object, u"latitude"_qs, latitude);
   }
 };
 
@@ -368,10 +371,10 @@ struct TelegramBotVenue : public TelegramBotObject {
   QString foursquareId; // Optional. Foursquare identifier of the venue
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<TelegramBotLocation>::jsonPathGet(object, u"location"_qs, location);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"address"_qs, address);
-    JsonHelperT<QString>::jsonPathGet(object, u"foursquare_id"_qs, foursquareId, false);
+    JsonHelperT<TelegramBotLocation>::PathGet(object, u"location"_qs, location);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"address"_qs, address);
+    JsonHelperT<QString>::PathGet(object, u"foursquare_id"_qs, foursquareId, false);
   }
 };
 
@@ -383,7 +386,7 @@ struct TelegramBotUserProfilePhotos : public TelegramBotObject {
   TelegramBotUserProfilePhotos(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<qint32>::jsonPathGet(object, u"total_count"_qs, totalCount);
+    JsonHelperT<qint32>::PathGet(object, u"total_count"_qs, totalCount);
     JsonHelperT<TelegramBotPhotoSize>::jsonPathGetArrayArray(object, u"photos"_qs, photos);
   }
 };
@@ -399,9 +402,9 @@ struct TelegramBotFile : public TelegramBotObject {
   TelegramBotFile(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"file_id"_qs, fileId);
-    JsonHelperT<qint32>::jsonPathGet(object, u"file_size"_qs, fileSize, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"file_path"_qs, filePath, false);
+    JsonHelperT<QString>::PathGet(object, u"file_id"_qs, fileId);
+    JsonHelperT<qint32>::PathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelperT<QString>::PathGet(object, u"file_path"_qs, filePath, false);
   }
 };
 
@@ -414,8 +417,8 @@ struct TelegramBotChatMember : public TelegramBotObject {
   TelegramBotChatMember(QJsonObject object) { FromJson(object); }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"user"_qs, user);
-    JsonHelperT<QString>::jsonPathGet(object, u"status"_qs, status);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"user"_qs, user);
+    JsonHelperT<QString>::PathGet(object, u"status"_qs, status);
   }
 };
 
@@ -425,14 +428,14 @@ struct TelegramBotResponseParameters : public TelegramBotObject {
   qint32 retryAfter{}; // Optional. In case of exceeding flood control, the number of seconds left to wait before the request can be repeated
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<qint32>::jsonPathGet(object, u"migrate_to_chat_id"_qs, migrateToChatId, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"retry_after"_qs, retryAfter, false);
+    JsonHelperT<qint32>::PathGet(object, u"migrate_to_chat_id"_qs, migrateToChatId, false);
+    JsonHelperT<qint32>::PathGet(object, u"retry_after"_qs, retryAfter, false);
   }
 };
 
 #define TELEGRAMBOTMESSAGE_FIELDS \
     qint32 messageId{}; /* Unique message identifier inside this chat */\
-    TelegramBotUser from; /* Optional. Sender, can be empty for messages sent to channels */\
+    std::optional<TelegramBotUser> from; /* Optional. Sender, can be empty for messages sent to channels */\
     qint32 date{}; /* Date the message was sent in Unix time */\
     TelegramBotChat chat; /* Conversation the message belongs to */\
     TelegramBotUser forwardFrom; /* Optional. For forwarded messages, sender of the original message */\
@@ -465,38 +468,38 @@ struct TelegramBotResponseParameters : public TelegramBotObject {
     qint32 migrateFromChatId{}; /* Optional. The supergroup has been migrated from a group with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */\
 
 #define TELEGRAMBOTMESSAGE_FIELD_PARSING \
-    JsonHelperT<qint32>::jsonPathGet(object, u"message_id"_qs, messageId); \
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"from"_qs, from, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"date"_qs, date); \
-    JsonHelperT<TelegramBotChat>::jsonPathGet(object, u"chat"_qs, chat, false); \
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"forward_from"_qs, forwardFrom, false); \
-    JsonHelperT<TelegramBotChat>::jsonPathGet(object, u"forward_from_chat"_qs, forwardFromChat, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"forward_from_message_id"_qs, forwardFromMessageId, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"forward_date"_qs, forwardDate, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"edit_date"_qs, editDate, false); \
-    JsonHelperT<QString>::jsonPathGet(object, u"text"_qs, text, false); \
+    JsonHelperT<qint32>::PathGet(object, u"message_id"_qs, messageId); \
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"from"_qs, from, false); \
+    JsonHelperT<qint32>::PathGet(object, u"date"_qs, date); \
+    JsonHelperT<TelegramBotChat>::PathGet(object, u"chat"_qs, chat, false); \
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"forward_from"_qs, forwardFrom, false); \
+    JsonHelperT<TelegramBotChat>::PathGet(object, u"forward_from_chat"_qs, forwardFromChat, false); \
+    JsonHelperT<qint32>::PathGet(object, u"forward_from_message_id"_qs, forwardFromMessageId, false); \
+    JsonHelperT<qint32>::PathGet(object, u"forward_date"_qs, forwardDate, false); \
+    JsonHelperT<qint32>::PathGet(object, u"edit_date"_qs, editDate, false); \
+    JsonHelperT<QString>::PathGet(object, u"text"_qs, text, false); \
     JsonHelperT<TelegramBotMessageEntity>::jsonPathGetArray(object, u"entities"_qs, entities, false); \
-    JsonHelperT<TelegramBotAudio>::jsonPathGet(object, u"audio"_qs, audio, false); \
-    JsonHelperT<TelegramBotDocument>::jsonPathGet(object, u"document"_qs, document, false); \
-    JsonHelperT<TelegramBotGame>::jsonPathGet(object, u"game"_qs, game, false); \
+    JsonHelperT<TelegramBotAudio>::PathGet(object, u"audio"_qs, audio, false); \
+    JsonHelperT<TelegramBotDocument>::PathGet(object, u"document"_qs, document, false); \
+    JsonHelperT<TelegramBotGame>::PathGet(object, u"game"_qs, game, false); \
     JsonHelperT<TelegramBotPhotoSize>::jsonPathGetArray(object, u"photo"_qs, photo, false); \
-    JsonHelperT<TelegramBotSticker>::jsonPathGet(object, u"sticker"_qs, sticker, false); \
-    JsonHelperT<TelegramBotVideo>::jsonPathGet(object, u"video"_qs, video, false); \
-    JsonHelperT<TelegramBotVoice>::jsonPathGet(object, u"voice"_qs, voice, false); \
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false); \
-    JsonHelperT<TelegramBotContact>::jsonPathGet(object, u"contact"_qs, contact, false); \
-    JsonHelperT<TelegramBotLocation>::jsonPathGet(object, u"location"_qs, location, false); \
-    JsonHelperT<TelegramBotVenue>::jsonPathGet(object, u"venue"_qs, venue, false); \
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"new_chat_member"_qs, newChatMember, false); \
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"left_chat_member"_qs, leftChatMember, false); \
-    JsonHelperT<QString>::jsonPathGet(object, u"new_chat_title"_qs, newChatTitle, false); \
+    JsonHelperT<TelegramBotSticker>::PathGet(object, u"sticker"_qs, sticker, false); \
+    JsonHelperT<TelegramBotVideo>::PathGet(object, u"video"_qs, video, false); \
+    JsonHelperT<TelegramBotVoice>::PathGet(object, u"voice"_qs, voice, false); \
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false); \
+    JsonHelperT<TelegramBotContact>::PathGet(object, u"contact"_qs, contact, false); \
+    JsonHelperT<TelegramBotLocation>::PathGet(object, u"location"_qs, location, false); \
+    JsonHelperT<TelegramBotVenue>::PathGet(object, u"venue"_qs, venue, false); \
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"new_chat_member"_qs, newChatMember, false); \
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"left_chat_member"_qs, leftChatMember, false); \
+    JsonHelperT<QString>::PathGet(object, u"new_chat_title"_qs, newChatTitle, false); \
     JsonHelperT<TelegramBotPhotoSize>::jsonPathGetArray(object, u"new_chat_photo"_qs, newChatPhoto, false); \
-    JsonHelperT<bool>::jsonPathGet(object, u"delete_chat_photo = false"_qs, deleteChatPhoto, false); \
-    JsonHelperT<bool>::jsonPathGet(object, u"group_chat_created = false"_qs, groupChatCreated, false); \
-    JsonHelperT<bool>::jsonPathGet(object, u"supergroup_chat_created = false"_qs, supergroupChatCreated, false); \
-    JsonHelperT<bool>::jsonPathGet(object, u"channel_chat_created = false"_qs, channelChatCreated, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"migrate_to_chat_id"_qs, migrateToChatId, false); \
-    JsonHelperT<qint32>::jsonPathGet(object, u"migrate_from_chat_id"_qs, migrateFromChatId, false);
+    JsonHelperT<bool>::PathGet(object, u"delete_chat_photo = false"_qs, deleteChatPhoto, false); \
+    JsonHelperT<bool>::PathGet(object, u"group_chat_created = false"_qs, groupChatCreated, false); \
+    JsonHelperT<bool>::PathGet(object, u"supergroup_chat_created = false"_qs, supergroupChatCreated, false); \
+    JsonHelperT<bool>::PathGet(object, u"channel_chat_created = false"_qs, channelChatCreated, false); \
+    JsonHelperT<qint32>::PathGet(object, u"migrate_to_chat_id"_qs, migrateToChatId, false); \
+    JsonHelperT<qint32>::PathGet(object, u"migrate_from_chat_id"_qs, migrateFromChatId, false);
 
 // TelegramBotMessageSingle - This object represents a message (without any recursive fields which references to same class, see TelegramBotMessage for complete message)
 struct TelegramBotMessageSingle : public TelegramBotObject {
@@ -518,8 +521,8 @@ struct TelegramBotMessage : public TelegramBotObject {
     TELEGRAMBOTMESSAGE_FIELD_PARSING
 
     // own data
-    JsonHelperT<TelegramBotMessageSingle>::jsonPathGet(object, u"reply_to_message"_qs, replyToMessage, false);
-    JsonHelperT<TelegramBotMessageSingle>::jsonPathGet(object, u"pinned_message"_qs, pinnedMessage, false);
+    JsonHelperT<TelegramBotMessageSingle>::PathGet(object, u"reply_to_message"_qs, replyToMessage, false);
+    JsonHelperT<TelegramBotMessageSingle>::PathGet(object, u"pinned_message"_qs, pinnedMessage, false);
   }
 };
 
@@ -534,13 +537,13 @@ struct TelegramBotCallbackQuery : public TelegramBotObject {
   QString gameShortName; // Optional. Short name of a Game to be returned, serves as the unique identifier for the game
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"from"_qs, from);
-    JsonHelperT<TelegramBotMessage>::jsonPathGet(object, u"message"_qs, message, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"inline_message_id"_qs, inlineMessageId, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"chat_instance"_qs, chatInstance);
-    JsonHelperT<QString>::jsonPathGet(object, u"data"_qs, data, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"game_short_name"_qs, gameShortName, false);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"from"_qs, from);
+    JsonHelperT<TelegramBotMessage>::PathGet(object, u"message"_qs, message, false);
+    JsonHelperT<QString>::PathGet(object, u"inline_message_id"_qs, inlineMessageId, false);
+    JsonHelperT<QString>::PathGet(object, u"chat_instance"_qs, chatInstance);
+    JsonHelperT<QString>::PathGet(object, u"data"_qs, data, false);
+    JsonHelperT<QString>::PathGet(object, u"game_short_name"_qs, gameShortName, false);
   }
 };
 
@@ -557,11 +560,11 @@ struct TelegramBotInlineQuery : public TelegramBotObject {
   QString offset; // Offset of the results to be returned, can be controlled by the bot
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"from"_qs, from);
-    JsonHelperT<TelegramBotLocation>::jsonPathGet(object, u"location"_qs, location, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"query"_qs, query);
-    JsonHelperT<QString>::jsonPathGet(object, u"offset"_qs, offset);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"from"_qs, from);
+    JsonHelperT<TelegramBotLocation>::PathGet(object, u"location"_qs, location, false);
+    JsonHelperT<QString>::PathGet(object, u"query"_qs, query);
+    JsonHelperT<QString>::PathGet(object, u"offset"_qs, offset);
   }
 };
 
@@ -572,9 +575,9 @@ struct TelegramBotInputMessageContent : public TelegramBotObject {
   bool disableWebPagePreview{}; // Optional. Disables link previews for links in the sent message
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"message_text"_qs, messageText);
-    JsonHelperT<QString>::jsonPathGet(object, u"parse_mode"_qs, parseMode, false);
-    JsonHelperT<bool>::jsonPathGet(object, u"disable_web_page_preview"_qs, disableWebPagePreview, false);
+    JsonHelperT<QString>::PathGet(object, u"message_text"_qs, messageText);
+    JsonHelperT<QString>::PathGet(object, u"parse_mode"_qs, parseMode, false);
+    JsonHelperT<bool>::PathGet(object, u"disable_web_page_preview"_qs, disableWebPagePreview, false);
   }
 };
 
@@ -593,17 +596,17 @@ struct TelegramBotInlineQueryResult : public TelegramBotObject {
   qint32 thumbHeight{}; // Optional. Thumbnail height
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"url"_qs, url, false);
-    JsonHelperT<bool>::jsonPathGet(object, u"hide_url"_qs, hideUrl, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_width"_qs, thumbWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_height"_qs, thumbHeight, false);
+    JsonHelperT<QString>::PathGet(object, u"url"_qs, url, false);
+    JsonHelperT<bool>::PathGet(object, u"hide_url"_qs, hideUrl, false);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_width"_qs, thumbWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_height"_qs, thumbHeight, false);
   }
 };
 
@@ -622,17 +625,17 @@ struct TelegramBotInlineQueryResultPhoto : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the photo
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"photo_url"_qs, photoUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl);
-    JsonHelperT<qint32>::jsonPathGet(object, u"photo_width"_qs, photoWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"photo_height"_qs, photoHeight, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"photo_url"_qs, photoUrl);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl);
+    JsonHelperT<qint32>::PathGet(object, u"photo_width"_qs, photoWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"photo_height"_qs, photoHeight, false);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -650,16 +653,16 @@ struct TelegramBotInlineQueryResultGif : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the GIF animation
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"gif_url"_qs, gifUrl);
-    JsonHelperT<qint32>::jsonPathGet(object, u"gif_width"_qs, gifWidth);
-    JsonHelperT<qint32>::jsonPathGet(object, u"gif_height"_qs, gifHeight);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"gif_url"_qs, gifUrl);
+    JsonHelperT<qint32>::PathGet(object, u"gif_width"_qs, gifWidth);
+    JsonHelperT<qint32>::PathGet(object, u"gif_height"_qs, gifHeight);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -677,16 +680,16 @@ struct TelegramBotInlineQueryResultMpeg4Gif : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the video animation
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"mpeg4Url"_qs, mpeg4Url);
-    JsonHelperT<qint32>::jsonPathGet(object, u"mpeg4Width"_qs, mpeg4Width);
-    JsonHelperT<qint32>::jsonPathGet(object, u"mpeg4Height"_qs, mpeg4Height);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"mpeg4Url"_qs, mpeg4Url);
+    JsonHelperT<qint32>::PathGet(object, u"mpeg4Width"_qs, mpeg4Width);
+    JsonHelperT<qint32>::PathGet(object, u"mpeg4Height"_qs, mpeg4Height);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -707,19 +710,19 @@ struct TelegramBotInlineQueryResultVideo : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the video
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"video_url"_qs, videoUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"video_width"_qs, videoWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"video_height"_qs, videoHeight, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"video_duration"_qs, videoDuration, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"video_url"_qs, videoUrl);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<qint32>::PathGet(object, u"video_width"_qs, videoWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"video_height"_qs, videoHeight, false);
+    JsonHelperT<qint32>::PathGet(object, u"video_duration"_qs, videoDuration, false);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -736,15 +739,15 @@ struct TelegramBotInlineQueryResultAudio : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the audio (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"audio_url"_qs, audioUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"performer"_qs, performer, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"audio_duration"_qs, audioDuration, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"audio_url"_qs, audioUrl);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"performer"_qs, performer, false);
+    JsonHelperT<qint32>::PathGet(object, u"audio_duration"_qs, audioDuration, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -760,14 +763,14 @@ struct TelegramBotInlineQueryResultVoice : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the voice recording (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"voice_url"_qs, voiceUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"voice_duration"_qs, voiceDuration, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"voice_url"_qs, voiceUrl);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<qint32>::PathGet(object, u"voice_duration"_qs, voiceDuration, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -787,18 +790,18 @@ struct TelegramBotInlineQueryResultDocument : public TelegramBotObject {
   qint32 thumbHeight{}; // Optional. Thumbnail height (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption);
-    JsonHelperT<QString>::jsonPathGet(object, u"document_url"_qs, documentUrl);
-    JsonHelperT<QString>::jsonPathGet(object, u"mime_type"_qs, mimeType);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption);
+    JsonHelperT<QString>::PathGet(object, u"document_url"_qs, documentUrl);
+    JsonHelperT<QString>::PathGet(object, u"mime_type"_qs, mimeType);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_width"_qs, thumbWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_height"_qs, thumbHeight, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_width"_qs, thumbWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_height"_qs, thumbHeight, false);
   }
 };
 
@@ -816,16 +819,16 @@ struct TelegramBotInlineQueryResultLocation : public TelegramBotObject {
   qint32 thumbHeight{}; // Optional. Thumbnail height (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<double>::jsonPathGet(object, u"latitude"_qs, latitude);
-    JsonHelperT<double>::jsonPathGet(object, u"longitude"_qs, longitude);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<double>::PathGet(object, u"latitude"_qs, latitude);
+    JsonHelperT<double>::PathGet(object, u"longitude"_qs, longitude);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_width"_qs, thumbWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_height"_qs, thumbHeight, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_width"_qs, thumbWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_height"_qs, thumbHeight, false);
   }
 };
 
@@ -845,18 +848,18 @@ struct TelegramBotInlineQueryResultVenue : public TelegramBotObject {
   qint32 thumbHeight{}; // Optional. Thumbnail height (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<double>::jsonPathGet(object, u"latitude"_qs, latitude);
-    JsonHelperT<double>::jsonPathGet(object, u"longitude"_qs, longitude);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"address"_qs, address);
-    JsonHelperT<QString>::jsonPathGet(object, u"foursquare_id"_qs, foursquareId, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<double>::PathGet(object, u"latitude"_qs, latitude);
+    JsonHelperT<double>::PathGet(object, u"longitude"_qs, longitude);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"address"_qs, address);
+    JsonHelperT<QString>::PathGet(object, u"foursquare_id"_qs, foursquareId, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_width"_qs, thumbWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_height"_qs, thumbHeight, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_width"_qs, thumbWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_height"_qs, thumbHeight, false);
   }
 };
 
@@ -874,16 +877,16 @@ struct TelegramBotInlineQueryResultContact : public TelegramBotObject {
   qint32 thumbHeight{}; // Optional. Thumbnail height (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"phone_number"_qs, phoneNumber);
-    JsonHelperT<QString>::jsonPathGet(object, u"first_name"_qs, firstName);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"phone_number"_qs, phoneNumber);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"thumb_url"_qs, thumbUrl, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_width"_qs, thumbWidth, false);
-    JsonHelperT<qint32>::jsonPathGet(object, u"thumb_height"_qs, thumbHeight, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<QString>::PathGet(object, u"thumb_url"_qs, thumbUrl, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_width"_qs, thumbWidth, false);
+    JsonHelperT<qint32>::PathGet(object, u"thumb_height"_qs, thumbHeight, false);
   }
 };
 
@@ -895,9 +898,9 @@ struct TelegramBotInlineQueryResultGame : public TelegramBotObject {
   TelegramKeyboard replyMarkup; // Optional. Inline keyboard attached to the message (Note: This will only work in Telegram versions released after October 1, 2016. Older clients will not display any inline results if a game result is among them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"game_short_name"_qs, gameShortName);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"game_short_name"_qs, gameShortName);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
   }
 };
@@ -914,14 +917,14 @@ struct TelegramBotInlineQueryResultCachedPhoto : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the photo
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"photo_file_id"_qs, photoFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"photo_file_id"_qs, photoFileId);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -936,13 +939,13 @@ struct TelegramBotInlineQueryResultCachedGif : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the GIF animation
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"gif_file_id"_qs, gifFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"gif_file_id"_qs, gifFileId);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -957,13 +960,13 @@ struct TelegramBotInlineQueryResultCachedMpeg4Gif : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the video animation
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"mpeg4FileId"_qs, mpeg4FileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"mpeg4FileId"_qs, mpeg4FileId);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -976,11 +979,11 @@ struct TelegramBotInlineQueryResultCachedSticker : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the sticker (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"sticker_file_id"_qs, stickerFileId);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"sticker_file_id"_qs, stickerFileId);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -996,14 +999,14 @@ struct TelegramBotInlineQueryResultCachedDocument : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the file (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"document_file_id"_qs, documentFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"document_file_id"_qs, documentFileId);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -1019,14 +1022,14 @@ struct TelegramBotInlineQueryResultCachedVideo : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the video
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"video_file_id"_qs, videoFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"description"_qs, description, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"video_file_id"_qs, videoFileId);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description, false);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -1041,13 +1044,13 @@ struct TelegramBotInlineQueryResultCachedVoice : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the voice message (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"voice_file_id"_qs, voiceFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"voice_file_id"_qs, voiceFileId);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -1061,12 +1064,12 @@ struct TelegramBotInlineQueryResultCachedAudio : public TelegramBotObject {
   TelegramBotInputMessageContent inputMessageContent; // Optional. Content of the message to be sent instead of the audio (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"type"_qs, type);
-    JsonHelperT<QString>::jsonPathGet(object, u"id"_qs, id);
-    JsonHelperT<QString>::jsonPathGet(object, u"audio_file_id"_qs, audioFileId);
-    JsonHelperT<QString>::jsonPathGet(object, u"caption"_qs, caption, false);
+    JsonHelperT<QString>::PathGet(object, u"type"_qs, type);
+    JsonHelperT<QString>::PathGet(object, u"id"_qs, id);
+    JsonHelperT<QString>::PathGet(object, u"audio_file_id"_qs, audioFileId);
+    JsonHelperT<QString>::PathGet(object, u"caption"_qs, caption, false);
     JsonHelperT<TelegramBotKeyboardButton>::jsonPathGetArrayArray(object, u"reply_markup"_qs, replyMarkup, false);
-    JsonHelperT<TelegramBotInputMessageContent>::jsonPathGet(object, u"input_message_content"_qs, inputMessageContent, false);
+    JsonHelperT<TelegramBotInputMessageContent>::PathGet(object, u"input_message_content"_qs, inputMessageContent, false);
   }
 };
 
@@ -1076,8 +1079,8 @@ struct TelegramBotInputLocationMessageContent : public TelegramBotObject {
   double longitude; // Longitude of the location in degrees (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<double>::jsonPathGet(object, u"latitude"_qs, latitude);
-    JsonHelperT<double>::jsonPathGet(object, u"longitude"_qs, longitude);
+    JsonHelperT<double>::PathGet(object, u"latitude"_qs, latitude);
+    JsonHelperT<double>::PathGet(object, u"longitude"_qs, longitude);
   }
 };
 
@@ -1090,11 +1093,11 @@ struct TelegramBotInputVenueMessageContent : public TelegramBotObject {
   QString foursquareId; // Optional. Foursquare identifier of the venue, if known (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<double>::jsonPathGet(object, u"latitude"_qs, latitude);
-    JsonHelperT<double>::jsonPathGet(object, u"longitude"_qs, longitude);
-    JsonHelperT<QString>::jsonPathGet(object, u"title"_qs, title);
-    JsonHelperT<QString>::jsonPathGet(object, u"address"_qs, address);
-    JsonHelperT<QString>::jsonPathGet(object, u"foursquare_id"_qs, foursquareId, false);
+    JsonHelperT<double>::PathGet(object, u"latitude"_qs, latitude);
+    JsonHelperT<double>::PathGet(object, u"longitude"_qs, longitude);
+    JsonHelperT<QString>::PathGet(object, u"title"_qs, title);
+    JsonHelperT<QString>::PathGet(object, u"address"_qs, address);
+    JsonHelperT<QString>::PathGet(object, u"foursquare_id"_qs, foursquareId, false);
   }
 };
 
@@ -1105,9 +1108,9 @@ struct TelegramBotInputContactMessageContent : public TelegramBotObject {
   QString lastName; // Optional. Contact's last name (Note: This will only work in Telegram versions released after 9 April, 2016. Older clients will ignore them.)
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"phone_number"_qs, phoneNumber);
-    JsonHelperT<QString>::jsonPathGet(object, u"first_name"_qs, firstName);
-    JsonHelperT<QString>::jsonPathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<QString>::PathGet(object, u"phone_number"_qs, phoneNumber);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
   }
 };
 
@@ -1120,11 +1123,11 @@ struct TelegramBotChosenInlineResult : public TelegramBotObject {
   QString query; // The query that was used to obtain the result
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelperT<QString>::jsonPathGet(object, u"result_id"_qs, resultId);
-    JsonHelperT<TelegramBotUser>::jsonPathGet(object, u"from"_qs, from);
-    JsonHelperT<TelegramBotLocation>::jsonPathGet(object, u"location"_qs, location, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"inline_message_id"_qs, inlineMessageId, false);
-    JsonHelperT<QString>::jsonPathGet(object, u"query"_qs, query);
+    JsonHelperT<QString>::PathGet(object, u"result_id"_qs, resultId);
+    JsonHelperT<TelegramBotUser>::PathGet(object, u"from"_qs, from);
+    JsonHelperT<TelegramBotLocation>::PathGet(object, u"location"_qs, location, false);
+    JsonHelperT<QString>::PathGet(object, u"inline_message_id"_qs, inlineMessageId, false);
+    JsonHelperT<QString>::PathGet(object, u"query"_qs, query);
   }
 };
 

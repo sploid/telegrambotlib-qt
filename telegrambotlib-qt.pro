@@ -6,6 +6,7 @@ CONFIG += qt warn_on release exceptions stl embed_manifest_exe precompile_header
 CONFIG -= flat app_bundle
 PRECOMPILED_HEADER = $$PWD/src/stdafx.h
 QMAKE_CXXFLAGS_WARN_ON = -W4
+QMAKE_CXXFLAGS_RELEASE -= -Od
 QMAKE_CXXFLAGS += /Zi /MP
 QMAKE_LFLAGS += /DEBUG /FIXED:NO
 DEFINES += \
@@ -26,7 +27,6 @@ SOURCES += \
 
 HEADERS += \
   $$PWD/src/common.h \
-  $$PWD/src/stdafx.h \
   $$PWD/src/telegrambot.h \
   $$PWD/src/jsonhelper.h \
   $$PWD/src/telegramdatastructs.h \
