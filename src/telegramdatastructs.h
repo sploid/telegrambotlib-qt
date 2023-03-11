@@ -4,25 +4,23 @@
 #include "telegramdatainterface.h"
 
 #define TELEGRAMBOTKEYBOARD_FIELDS \
-    /* global */ \
-    QString text; \
-     \
-    /* inline keyboard */ \
-    QString url; \
-    QString callbackData; \
-    QString switchInlineQuery; \
-    QString switchInlineQueryCurrentChat; \
-     \
-    /* normal keyboard */ \
-    bool requestContact = false; \
-    bool requestLocation = false;
+  /* global */ \
+  QString text; \
+   \
+  /* inline keyboard */ \
+  QString url; \
+  QString callbackData; \
+  QString switchInlineQuery; \
+  QString switchInlineQueryCurrentChat; \
+   \
+  /* normal keyboard */ \
+  bool requestContact{false}; \
+  bool requestLocation{false};
 
-struct TelegramBotKeyboardButtonRequest
-{
-    TELEGRAMBOTKEYBOARD_FIELDS
+struct TelegramBotKeyboardButtonRequest {
+  TELEGRAMBOTKEYBOARD_FIELDS
 };
 typedef QList<QList<TelegramBotKeyboardButtonRequest>> TelegramKeyboardRequest;
-
 
 /*
  *  Telegram System Data Structs
@@ -60,13 +58,13 @@ struct TelegramBotOperationResult : public TelegramBotObject {
   qint32 errorCode{0};
   QString description;
 
-  TelegramBotOperationResult(QJsonObject object) { FromJson(object); }
+  TelegramBotOperationResult(const QJsonObject& object) { FromJson(object); }
 
   // parse logic
   void FromJson(const QJsonObject& object) override {
-      JsonHelperT<bool>::PathGet(object, u"result"_qs, result);
-      JsonHelperT<qint32>::PathGet(object, u"error_code"_qs, errorCode, false);
-      JsonHelperT<QString>::PathGet(object, u"description"_qs, description);
+    JsonHelperT<bool>::PathGet(object, u"result"_qs, result);
+    JsonHelperT<qint32>::PathGet(object, u"error_code"_qs, errorCode, false);
+    JsonHelperT<QString>::PathGet(object, u"description"_qs, description);
   }
 };
 
@@ -101,10 +99,10 @@ struct TelegramBotWebHookInfo : public TelegramBotObject {
 struct TelegramBotUser : public TelegramBotObject {
   qint32 id; // Unique identifier for this user or bot
   bool is_bot{false};
-  QString firstName; // User‘s or bot’s first name
-  QString lastName; // Optional. User‘s or bot’s last name
-  QString username; // Optional. User‘s or bot’s username
-  QString languageCode; // Optional. User‘s or bot’s locale
+  QString first_name; // User‘s or bot’s first name
+  std::optional<QString> last_name; // Optional. User‘s or bot’s last name
+  std::optional<QString> username; // Optional. User‘s or bot’s username
+  std::optional<QString> language_code; // Optional. User‘s or bot’s locale
 
   TelegramBotUser() { }
   TelegramBotUser(QJsonObject object) { FromJson(object); }
@@ -112,10 +110,10 @@ struct TelegramBotUser : public TelegramBotObject {
   void FromJson(const QJsonObject& object) override {
     JsonHelperT<qint32>::PathGet(object, u"id"_qs, id);
     JsonHelperT<bool>::PathGet(object, u"is_bot"_qs, is_bot);
-    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, firstName);
-    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, lastName, false);
+    JsonHelperT<QString>::PathGet(object, u"first_name"_qs, first_name);
+    JsonHelperT<QString>::PathGet(object, u"last_name"_qs, last_name, false);
     JsonHelperT<QString>::PathGet(object, u"username"_qs, username, false);
-    JsonHelperT<QString>::PathGet(object, u"language_code"_qs, languageCode, false);
+    JsonHelperT<QString>::PathGet(object, u"language_code"_qs, language_code, false);
   }
 };
 

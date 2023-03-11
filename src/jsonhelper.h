@@ -4,32 +4,45 @@
 
 class BOT_EXPORT JsonHelper {
 public:
-  // main json parser
   template<typename T>
-  static bool PathGet(QJsonValue data, QString path, T& target, bool show_warnings = true) {
-    // get value and exit if value is invalid, or is not convertable to T
-    QVariant jPathValue = JsonHelper::PathGetImpl(data, path, show_warnings);
-    target = jPathValue.value<T>();
-
-    // return true if convert was successfull otherwise false
-    return jPathValue != QJsonValue(QJsonValue::Undefined) && !jPathValue.canConvert<T>();
+  static bool PathGet(const QJsonValue& data, const QString& path, T& target, bool show_warnings = true) {
+    const QVariant j_path_value = JsonHelper::PathGetImpl(data, path, show_warnings);
+    target = j_path_value.value<T>();
+    return j_path_value != QJsonValue(QJsonValue::Undefined) && !j_path_value.canConvert<T>();
   }
-  static QVariant PathGet(QJsonValue data, QString path) { return JsonHelper::PathGetImpl(data, path, true); }
-  static QVariant jsonPathGetSilent(QJsonValue data, QString path) { return JsonHelper::PathGetImpl(data, path, false); }
+  template<typename T>
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    const QVariant j_path_value = JsonHelper::PathGetImpl(data, path, show_warnings);
+    if (j_path_value == QJsonValue(QJsonValue::Undefined) || !j_path_value.canConvert<T>()) {
+      return false;
+    }
+    target = j_path_value.value<T>();
+    return true;
+  }
+  static QVariant PathGet(const QJsonValue& data, const QString& path) {
+    return JsonHelper::PathGetImpl(data, path, true);
+  }
+  static QVariant PathGetSilent(const QJsonValue& data, const QString& path) {
+    return JsonHelper::PathGetImpl(data, path, false);
+  }
 
 private:
-    static QVariant PathGetImpl(QJsonValue data, const QString& path, bool show_warnings);
+  static QVariant PathGetImpl(QJsonValue data, const QString& path, bool show_warnings);
 };
 
 template<typename T, class Enable = void>
 class JsonHelperT {
 public:
-  static bool PathGet(QJsonValue data, QString path, T& target, bool show_warnings = true) {
-      return JsonHelper::PathGet(data, path, target, show_warnings);
+  static bool PathGet(const QJsonValue& data, const QString& path, T& target, bool show_warnings = true) {
+    return JsonHelper::PathGet(data, path, target, show_warnings);
   }
 
-  static bool jsonPathGetArray(QJsonValue data, QString path, QList<T>& target, bool show_warnings = true) {
-    QJsonValue value = show_warnings ? JsonHelper::PathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    return JsonHelper::PathGet(data, path, target, show_warnings);
+  }
+
+  static bool jsonPathGetArray(const QJsonValue& data, const QString& path, QList<T>& target, bool show_warnings = true) {
+    QJsonValue value = show_warnings ? JsonHelper::PathGet(data, path).toJsonValue() : JsonHelper::PathGetSilent(data, path).toJsonValue();
     if (value.isArray()) {
       QJsonArray jArray = value.toArray();
       int idx{0};
@@ -50,7 +63,7 @@ public:
   }
 
   static bool jsonPathGetArrayArray(QJsonValue data, QString path, QList<QList<T>>& target, bool show_warnings = true) {
-    QJsonValue value = show_warnings ? JsonHelper::PathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
+    QJsonValue value = show_warnings ? JsonHelper::PathGet(data, path).toJsonValue() : JsonHelper::PathGetSilent(data, path).toJsonValue();
     if (value.isArray()) {
       QJsonArray jArray = value.toArray();
       int idx{0};
@@ -68,11 +81,11 @@ public:
     return true;
   }
 
-  static QVariant PathGet(QJsonValue data, QString path) {
+  static QVariant PathGet(const QJsonValue& data, const QString& path) {
     return JsonHelper::PathGet(data, path);
   }
 
-  static QVariant jsonPathGetSilent(QJsonValue data, QString path) {
-    return JsonHelper::jsonPathGetSilent(data, path);
+  static QVariant PathGetSilent(const QJsonValue& data, const QString& path) {
+    return JsonHelper::PathGetSilent(data, path);
   }
 };

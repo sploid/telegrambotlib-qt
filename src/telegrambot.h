@@ -46,13 +46,20 @@ public:
     ForceReply                   = 1 << 9
   };
   // Keyboard construction helpers
-  static inline TelegramBotKeyboardButtonRequest constructTextButton(QString text, bool requestContact = false, bool requestLocation = false){
-    return TelegramBotKeyboardButtonRequest{ text, QString(), QString(), QString(), QString(), requestContact, requestLocation };
+  static TelegramBotKeyboardButtonRequest ConstructTextButton(const QString& text, bool request_contact = false,
+                                                              bool request_location = false) {
+    return TelegramBotKeyboardButtonRequest{.text = text, . requestContact = request_contact, .requestLocation = request_location};
   }
-  static inline TelegramBotKeyboardButtonRequest constructInlineButton(QString text, QString callbackData, QString url = QString(), QString inlineQueryData = QString(), QString inlineQueryDataCurrentChat = QString()) {
-    return TelegramBotKeyboardButtonRequest{ text, url, callbackData, inlineQueryData, inlineQueryDataCurrentChat, false, false };
+  static TelegramBotKeyboardButtonRequest ConstructInlineButton(const QString& text, const QString& callback_data,
+                                                                const QString& url = {}, const QString& inline_query_data = {},
+                                                                const QString& inline_query_data_current_chat = {}) {
+    return TelegramBotKeyboardButtonRequest{.text = text,
+                                            .url = url,
+                                            .callbackData = callback_data,
+                                            .switchInlineQuery = inline_query_data,
+                                            .switchInlineQueryCurrentChat = inline_query_data_current_chat};
   }
-  static TelegramKeyboardRequest constructInlineMenu(QList<QString> menu, QString dataPattern, int page, int columns, int limit, QString lastPage = "");
+  static TelegramKeyboardRequest ConstructInlineMenu(const QList<std::tuple<QString, QString>>& menu);
 
   TelegramBot(QString apikey, QObject* parent);
   ~TelegramBot();
@@ -79,7 +86,8 @@ public:
   void answerCallbackQuery(QString callbackQueryId, QString text = QString(), bool showAlert = false, int cacheTime = 0, QString url = QString(), bool* response = 0);
 
   // Message Functions
-  void sendMessage(QVariant chatId, QString text, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
+  void SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag,
+                   const TelegramKeyboardRequest& keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
   void editMessageText(QVariant chatId, QVariant messageId, QString text, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageCaption(QVariant chatId, QVariant messageId, QString caption = QString(), TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageReplyMarkup(QVariant chatId, QVariant messageId, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
@@ -136,7 +144,7 @@ private:
 
   // helpers
   QHttpMultiPart* createUploadFile(QString name, QString fileName, QByteArray& content, bool detectMimeType = false, QHttpMultiPart* multiPart = 0);
-  void handleReplyMarkup(QUrlQuery& params, TelegramFlags flags, TelegramKeyboardRequest& keyboard);
+  void HandleReplyMarkup(QUrlQuery& params, TelegramFlags flags, const TelegramKeyboardRequest& keyboard);
   QHttpMultiPart* handleFile(QString fieldName, QVariant file, QUrlQuery& params, QHttpMultiPart* multiPart = 0);
 
   // global data
