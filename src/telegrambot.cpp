@@ -127,7 +127,7 @@ QList<TelegramBotChatMember> TelegramBot::getChatAdministrators(QVariant chatId)
 
     // call api and parse result
     QList<TelegramBotChatMember> chatMemebers;
-    JsonHelperT<TelegramBotChatMember>::jsonPathGetArray(this->callApiJson("getChatAdministrators", params), "result", chatMemebers);
+    JsonHelper::PathGet(callApiJson("getChatAdministrators", params), u"result"_qs, chatMemebers);
     return chatMemebers;
 }
 

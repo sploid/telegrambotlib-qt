@@ -48,7 +48,7 @@ public:
   // Keyboard construction helpers
   static TelegramBotKeyboardButtonRequest ConstructTextButton(const QString& text, bool request_contact = false,
                                                               bool request_location = false) {
-    return TelegramBotKeyboardButtonRequest{.text = text, . requestContact = request_contact, .requestLocation = request_location};
+    return TelegramBotKeyboardButtonRequest{.text = text, .requestContact = request_contact, .requestLocation = request_location};
   }
   static TelegramBotKeyboardButtonRequest ConstructInlineButton(const QString& text, const QString& callback_data,
                                                                 const QString& url = {}, const QString& inline_query_data = {},

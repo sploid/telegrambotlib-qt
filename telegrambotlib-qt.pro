@@ -5,9 +5,9 @@ QT -= gui
 CONFIG += qt warn_on release exceptions stl embed_manifest_exe precompile_header console suppress_vcproj_warnings c++latest
 CONFIG -= flat app_bundle
 PRECOMPILED_HEADER = $$PWD/src/stdafx.h
-QMAKE_CXXFLAGS_WARN_ON = -W4
-QMAKE_CXXFLAGS_RELEASE -= -Od
-QMAKE_CXXFLAGS += /Zi /MP
+QMAKE_CXXFLAGS_RELEASE -= /O2
+QMAKE_CXXFLAGS_RELEASE += /Od
+QMAKE_CXXFLAGS += /Zi /MP /W4
 QMAKE_LFLAGS += /DEBUG /FIXED:NO
 DEFINES += \
   BOT_LIB \
@@ -30,7 +30,6 @@ HEADERS += \
   $$PWD/src/telegrambot.h \
   $$PWD/src/jsonhelper.h \
   $$PWD/src/telegramdatastructs.h \
-  $$PWD/src/telegramdatainterface.h \
   $$PWD/modules/sslserver/sslserver.h \
   $$PWD/modules/httpserver/httpserver.h
 
