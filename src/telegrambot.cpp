@@ -161,7 +161,7 @@ void TelegramBot::answerCallbackQuery(QString callbackQueryId, QString text, boo
 
 
 void TelegramBot::SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id, TelegramFlags flags,
-                              const TelegramKeyboardRequest& keyboard, TelegramBotMessage *response) {
+                              const TelegramKeyboardRequest& keyboard) {
   QUrlQuery params;
   params.addQueryItem(u"chat_id"_s, chat_id.toString());
   params.addQueryItem(u"text"_s, text);
@@ -172,7 +172,14 @@ void TelegramBot::SendMessage(const QVariant& chat_id, const QString& text, int 
   if (reply_to_message_id) params.addQueryItem(u"reply_to_message_id"_s, QString::number(reply_to_message_id));
 
   HandleReplyMarkup(params, flags, keyboard);
-  return CallApiTemplate(u"sendMessage"_s, params, response);
+  QNetworkReply* reply = callApi(u"sendMessage"_s, params, false);
+  connect(reply, &QNetworkReply::finished, this,
+          [reply] () {
+            reply->deleteLater();
+            if (reply->error() != QNetworkReply::NoError) {
+              qCritical() << "SendMessage failed, params: " << reply->error() << reply->url();
+            }
+          });
 }
 
 void TelegramBot::editMessageText(QVariant chatId, QVariant messageId, QString text, TelegramFlags flags, TelegramKeyboardRequest keyboard, bool *response)

@@ -91,7 +91,7 @@ public:
 
   // Message Functions
   void SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag,
-                   const TelegramKeyboardRequest& keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
+                   const TelegramKeyboardRequest& keyboard = TelegramKeyboardRequest());
   void editMessageText(QVariant chatId, QVariant messageId, QString text, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageCaption(QVariant chatId, QVariant messageId, QString caption = QString(), TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageReplyMarkup(QVariant chatId, QVariant messageId, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
