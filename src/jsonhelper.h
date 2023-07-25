@@ -9,7 +9,10 @@ struct BOT_EXPORT TelegramBotObject {
 
 class BOT_EXPORT JsonHelper {
 public:
-  template<typename T, typename std::enable_if<std::is_same<std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type>::value, bool>::type = true>
+  template<typename T, typename std::enable_if<
+    std::is_same<
+      std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type
+    >::value, bool>::type = true>
   static bool PathGet(const QJsonValue& data, const QString& path, T& target, bool show_warnings = true) {
     const QVariant j_path_value = JsonHelper::PathGetImpl(data, path, show_warnings);
     target = j_path_value.value<T>();
