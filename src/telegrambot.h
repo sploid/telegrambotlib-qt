@@ -22,7 +22,7 @@ public:
     CallbackQuery       = 1 << 6
   };
 
-  enum TelegramFlags : long long {
+  enum TelegramFlags {
     NoFlag                       = 0,
 
     // Message
@@ -43,8 +43,12 @@ public:
     ReplyKeyboardRemove          = 1 << 8,
 
     // ForceReply
-    ForceReply                   = 1 << 9
+    ForceReply                   = 1 << 9,
+
+    // Processing flags
+    SaveFileIdInCache             = 1 << 10
   };
+
   // Keyboard construction helpers
   static TelegramBotKeyboardButtonRequest ConstructTextButton(const QString& text, bool request_contact = false,
                                                               bool request_location = false) {
@@ -96,7 +100,7 @@ public:
 
   // Content Functions
   void sendPhoto(QVariant chatId, QVariant photo, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = nullptr);
-  void SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = nullptr);
+  void SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
   void sendDocument(QVariant chatId, QVariant document, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
   void sendSticker(QVariant chatId, QVariant sticker, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
   void sendVideo(QVariant chatId, QVariant video, QString caption = QString(), int duration = -1, int width = -1, int height = -1, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
@@ -145,7 +149,7 @@ private:
   // helpers
   QHttpMultiPart* CreateUploadFile(const QString& name, const QString& file_name, const QByteArray& content, bool detect_mime_type = false, QHttpMultiPart* multi_part = 0);
   void HandleReplyMarkup(QUrlQuery& params, TelegramFlags flags, const TelegramKeyboardRequest& keyboard);
-  QHttpMultiPart* HandleFile(const QString& fieldName, const QVariant& file, QUrlQuery& params, QHttpMultiPart* multiPart = 0);
+  QHttpMultiPart* HandleFile(const QString& fieldName, const QVariant& file, QUrlQuery& params, QHttpMultiPart* multiPart = 0, TelegramFlags flags = TelegramFlags::NoFlag);
 
   // global data
   QNetworkAccessManager aManager;
@@ -167,6 +171,7 @@ private:
       QDelegate<bool(TelegramBotUpdate)> delegate;
   };
   QList<MessageRoute*> messageRoutes;
+  QHash<QString, QString> cache_of_paths_to_file_id_;
 };
 
 /*

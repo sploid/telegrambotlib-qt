@@ -320,16 +320,22 @@ struct TelegramBotVideo : public TelegramBotObject {
 
 // TelegramBotVoice - This object represents a voice note.
 struct TelegramBotVoice : public TelegramBotObject {
-  QString fileId; // Unique identifier for this file
+  QString file_id; // Identifier for this file, which can be used to download or reuse the file
+  QString file_unique_id; // Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't be used to download or reuse the file.
   qint32 duration{}; // Duration of the audio in seconds as defined by sender
-  QString mimeType; // Optional. MIME type of the file as defined by sender
-  qint32 fileSize{}; // Optional. File size
+  QString mime_type; // Optional. MIME type of the file as defined by sender
+  qint32 file_size{}; // Optional. File size
+
+  bool IsFill() const {
+    return !file_id.isEmpty() && !file_unique_id.isEmpty();
+  }
 
   void FromJson(const QJsonObject& object) override {
-    JsonHelper::PathGet(object, u"file_id"_qs, fileId);
-    JsonHelper::PathGet(object, u"duration"_qs, duration);
-    JsonHelper::PathGet(object, u"mime_type"_qs, mimeType, false);
-    JsonHelper::PathGet(object, u"file_size"_qs, fileSize, false);
+    JsonHelper::PathGet(object, u"file_id"_s, file_id);
+    JsonHelper::PathGet(object, u"file_unique_id"_s, file_unique_id);
+    JsonHelper::PathGet(object, u"duration"_s, duration);
+    JsonHelper::PathGet(object, u"mime_type"_s, mime_type, false);
+    JsonHelper::PathGet(object, u"file_size"_s, file_size, false);
   }
 };
 

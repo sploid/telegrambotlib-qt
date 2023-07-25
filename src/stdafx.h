@@ -36,4 +36,4 @@
 #include <QSslConfiguration>
 #include <QList>
 
-
+using namespace Qt::Literals::StringLiterals;
