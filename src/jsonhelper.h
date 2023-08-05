@@ -72,7 +72,7 @@ public:
     QJsonArray array = show_warnings ? JsonHelper::PathGet(data, path).toJsonArray() : JsonHelper::PathGetSilent(data, path).toJsonArray();
     if (array.isEmpty()) return false;
     for (auto itr = array.begin(); itr != array.end(); itr++) {
-      JsonHelper::PathGet<T>(*itr, u""_qs, *target.insert(target.end(), T{}));
+      JsonHelper::PathGet<T>(*itr, u""_s, *target.insert(target.end(), T{}));
     }
     return true;
   }
@@ -82,7 +82,7 @@ public:
     const QJsonArray array = show_warnings ? JsonHelper::PathGet(data, path).toJsonArray() : JsonHelper::PathGetSilent(data, path).toJsonArray();
     if (array.isEmpty()) return false;
     for (auto itr = array.begin(); itr != array.end(); itr++) {
-      JsonHelper::PathGet(*itr, u""_qs, *target.insert(target.end(), QList<T>()));
+      JsonHelper::PathGet(*itr, u""_s, *target.insert(target.end(), QList<T>()));
     }
     return true;
   }

@@ -160,8 +160,8 @@ void TelegramBot::answerCallbackQuery(QString callbackQueryId, QString text, boo
 }
 
 
-void TelegramBot::SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id, TelegramFlags flags,
-                              const TelegramKeyboardRequest& keyboard) {
+QNetworkReply* TelegramBot::SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id, TelegramFlags flags,
+                                        const TelegramKeyboardRequest& keyboard) {
   QUrlQuery params;
   params.addQueryItem(u"chat_id"_s, chat_id.toString());
   params.addQueryItem(u"text"_s, text);
@@ -174,19 +174,24 @@ void TelegramBot::SendMessage(const QVariant& chat_id, const QString& text, int 
   HandleReplyMarkup(params, flags, keyboard);
   QNetworkReply* reply = callApi(u"sendMessage"_s, params, false);
   connect(reply, &QNetworkReply::finished, this,
-          [reply] () {
-            reply->deleteLater();
+          [reply, flags] () {
+            if (!(flags & TelegramFlags::NotDeleteOnFinish)) {
+              reply->deleteLater();
+            }
+
             if (reply->error() != QNetworkReply::NoError) {
               qCritical() << "SendMessage failed, params: " << reply->error() << reply->url();
             }
           });
+  return reply;
 }
 
 void TelegramBot::editMessageText(QVariant chatId, QVariant messageId, QString text, TelegramFlags flags, TelegramKeyboardRequest keyboard, bool *response)
 {
     // if we have a null messageId, and user don't request a response, call send Message
     if (!response && messageId.isNull()) {
-        return SendMessage(chatId, text, 0, flags, keyboard);
+        SendMessage(chatId, text, 0, flags, keyboard);
+        return;
     }
 
     // determine message id type
@@ -269,9 +274,9 @@ void TelegramBot::sendPhoto(QVariant chatId, QVariant photo, QString caption, in
     CallApiTemplate("sendPhoto", params, response, multiPart);
 }
 
-void TelegramBot::SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption, const QString& performer,
-                            const QString& title, int duration, int reply_to_messageId, TelegramFlags flags,
-                            TelegramKeyboardRequest keyboard) {
+QNetworkReply* TelegramBot::SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption, const QString& performer,
+                                      const QString& title, int duration, int reply_to_message_id, TelegramFlags flags,
+                                      TelegramKeyboardRequest keyboard) {
   QUrlQuery params;
   params.addQueryItem(u"chat_id"_s, chat_id.toString());
   if (!caption.isNull()) params.addQueryItem(u"caption"_s, caption);
@@ -280,13 +285,15 @@ void TelegramBot::SendAudio(const QVariant& chat_id, const QVariant& audio, cons
   if (!title.isNull()) params.addQueryItem(u"title"_s, title);
   if (flags && TelegramFlags::DisableNotfication) params.addQueryItem(u"disable_notification"_s, u"true"_s);
   if (flags && TelegramFlags::Markdown) params.addQueryItem(u"parse_mode"_s, u"Markdown"_s);
-  if (reply_to_messageId) params.addQueryItem(u"reply_to_message_id"_s, QString::number(reply_to_messageId));
+  if (reply_to_message_id) params.addQueryItem(u"reply_to_message_id"_s, QString::number(reply_to_message_id));
 
   HandleReplyMarkup(params, flags, keyboard);
   QNetworkReply* reply = callApi(u"sendAudio"_s, params, false, HandleFile(u"audio"_s, audio, params, nullptr, flags));
   connect(reply, &QNetworkReply::finished, this,
           [this, reply, params, flags, audio] () {
-            reply->deleteLater();
+            if (!(flags & TelegramFlags::NotDeleteOnFinish)) {
+              reply->deleteLater();
+            }
             if (reply->error() != QNetworkReply::NoError) {
               qCritical() << "SendAudio failed, params: " << params.toString() << reply->error() << reply->errorString();
               return;
@@ -300,6 +307,7 @@ void TelegramBot::SendAudio(const QVariant& chat_id, const QVariant& audio, cons
               }
             }
           });
+  return reply;
 }
 
 void TelegramBot::sendDocument(QVariant chatId, QVariant document, QString caption, int replyToMessageId, TelegramFlags flags, TelegramKeyboardRequest keyboard, TelegramBotMessage *response)

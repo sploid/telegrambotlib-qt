@@ -45,8 +45,8 @@ public:
     // ForceReply
     ForceReply                   = 1 << 9,
 
-    // Processing flags
-    SaveFileIdInCache             = 1 << 10
+    SaveFileIdInCache            = 1 << 10,
+    NotDeleteOnFinish            = 1 << 11
   };
 
   // Keyboard construction helpers
@@ -90,8 +90,8 @@ public:
   void answerCallbackQuery(QString callbackQueryId, QString text = QString(), bool showAlert = false, int cacheTime = 0, QString url = QString(), bool* response = 0);
 
   // Message Functions
-  void SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag,
-                   const TelegramKeyboardRequest& keyboard = TelegramKeyboardRequest());
+  QNetworkReply* SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag,
+                             const TelegramKeyboardRequest& keyboard = TelegramKeyboardRequest());
   void editMessageText(QVariant chatId, QVariant messageId, QString text, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageCaption(QVariant chatId, QVariant messageId, QString caption = QString(), TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
   void editMessageReplyMarkup(QVariant chatId, QVariant messageId, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), bool* response = 0);
@@ -100,7 +100,7 @@ public:
 
   // Content Functions
   void sendPhoto(QVariant chatId, QVariant photo, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = nullptr);
-  void SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
+  QNetworkReply* SendAudio(const QVariant& chat_id, const QVariant& audio, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
   void sendDocument(QVariant chatId, QVariant document, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
   void sendSticker(QVariant chatId, QVariant sticker, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
   void sendVideo(QVariant chatId, QVariant video, QString caption = QString(), int duration = -1, int width = -1, int height = -1, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
