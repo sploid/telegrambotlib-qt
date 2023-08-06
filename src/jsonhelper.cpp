@@ -1,13 +1,16 @@
 #include "jsonhelper.h"
 
-QVariant JsonHelper::PathGetImpl(QJsonValue data, const QString& path, bool show_warnings) {
+QJsonValue JsonHelper::PathGetImplJ(QJsonValue data, const QString& path, bool show_warnings) {
   QStringList splitted_path = path.split('.', Qt::SkipEmptyParts);
   QStringList processed;
   while (!splitted_path.isEmpty()) {
     const QString path_element = splitted_path.takeFirst();
     processed += path_element;
 
-    if (data.isUndefined()) return data;
+    if (data.isUndefined()) {
+      if (show_warnings) qWarning() << "Data is Undefined: " << path;
+      return data;
+    }
 
     if (data.type() == QJsonValue::Array) {
       bool is_int{false};
@@ -34,12 +37,10 @@ QVariant JsonHelper::PathGetImpl(QJsonValue data, const QString& path, bool show
       if (show_warnings && !splitted_path.isEmpty()) {
         qWarning("JsonHelper::jsonPath: pos: %s -> Reached data end, but still path data available (%s)", qPrintable(processed.join(".")), qPrintable(splitted_path.join(".")));
       }
-      return data.toVariant();
+      return data;
     }
   }
 
   // if we reach this point we have not reached the tail of the json object, so we just return the current position (correct converted to the right type!), so that the user can continue process
-  return data.isObject() ? QVariant::fromValue(data.toObject()) :
-         data.isArray() ? QVariant::fromValue(data.toArray()) :
-                           QVariant::fromValue(data);
+  return data;
 }

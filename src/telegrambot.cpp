@@ -628,7 +628,9 @@ void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
     const QJsonObject update = result.toObject();
 
     TelegramBotUpdate updateMessage(new TelegramBotUpdatePrivate);
-    updateMessage->FromJson(update);
+    if (!updateMessage->FromJson(update)) {
+      int t = 0;
+    }
 
     // save update id
     update_id = updateMessage->update_id;
@@ -670,9 +672,7 @@ TelegramBot::CallApiTemplate(QString method, QUrlQuery params, T* response, QHtt
     return;
   }
 
-  // get result and parse it
-  const QJsonObject object = QJsonObject(callApiJson(method, params, multiPart)).value("result").toObject();
-  response->FromJson(object);
+  response->FromJson(QJsonObject(callApiJson(method, params, multiPart)).value("result").toObject());
 }
 
 template<typename T>
