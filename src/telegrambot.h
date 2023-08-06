@@ -111,8 +111,8 @@ public:
   void sendContact(QVariant chatId, QString phoneNumber, QString firstName, QString lastName = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest(), TelegramBotMessage* response = 0);
 
   // Message Puller
-  void startMessagePulling(uint timeout = 10, uint limit = 100, TelegramPollMessageTypes messageTypes = TelegramPollMessageTypes::All, long offset = 0);
-  void stopMessagePulling(bool instantly = false);
+  void StartMessagePulling(uint timeout = 10, uint limit = 100, TelegramPollMessageTypes messageTypes = TelegramPollMessageTypes::All, long offset = 0);
+  void StopMessagePulling(bool instantly = false);
 
   // Webhook Functions
   bool setHttpServerWebhook(qint16 port, QString pathCert, QString pathPrivateKey, int maxConnections = 10, TelegramPollMessageTypes messageTypes = TelegramPollMessageTypes::All);
@@ -126,17 +126,15 @@ public:
 Q_SIGNALS:
   void NewMessage(TelegramBotUpdate message);
 
-private Q_SLOTS:
-  // pull functions
-  void pull();
-  void handlePullResponse();
+private:
+  void Pull();
+  void HandlePullResponse();
 
   void parseMessage(const QByteArray& data, bool singleMessage = false);
 
   // webhook functions
   void handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response);
 
-private:
   // call Api Helpers
   template<typename T>
   typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value>::type CallApiTemplate(QString method, QUrlQuery params = QUrlQuery(), T* response = 0, QHttpMultiPart* multiPart = 0);
@@ -154,11 +152,11 @@ private:
   // global data
   QNetworkAccessManager aManager;
   QString apiKey;
-  long updateId = 0;
+  qint64 update_id{0};
 
   // message puller
-  QNetworkReply* replyPull = 0;
-  QUrlQuery pullParams;
+  QNetworkReply* reply_pull_{nullptr};
+  QUrlQuery pull_params_;
 
   // httpserver webhook
   static QMap<qint16, HttpServer*> webHookWebServers;

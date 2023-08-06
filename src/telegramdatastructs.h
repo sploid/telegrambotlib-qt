@@ -1133,7 +1133,7 @@ struct TelegramBotChosenInlineResult : public TelegramBotObject {
 // This object represents an incoming update.
 struct TelegramBotUpdatePrivate : public TelegramBotObject {
   TelegramBotMessageType type{Undefined};
-  int updateId{};
+  qint64 update_id{};
 
   // Contains the message for the following Update types:
   // Message, EditedMessage, ChannelPost, EditedChannelPost, CallbackQuery
@@ -1151,48 +1151,47 @@ struct TelegramBotUpdatePrivate : public TelegramBotObject {
   }
 
   void FromJson(const QJsonObject& object) override {
-    for (auto itr = object.begin(); itr != object.end(); itr++) {
-      // parse update id
-      if(itr.key() == "update_id") {
-          this->updateId = itr.value().toVariant().toInt();
-          continue;
+    for (auto itr = object.begin(); itr != object.end(); ++itr) {
+      if (itr.key() == u"update_id"_s) {
+        update_id = itr.value().toInteger();
+        continue;
       }
 
       static std::map<QString, TelegramBotMessageType> key_to_type{
-          {u"message"_qs, Message},
-          {u"edited_message"_qs, EditedMessage},
-          {u"channel_post"_qs, ChannelPost},
-          {u"edited_channel_post"_qs, EditedChannelPost},
-          {u"inline_query"_qs, InlineQuery},
-          {u"chosen_inline_result"_qs, ChosenInlineResult},
-          {u"callback_query"_qs, CallbackQuery} };
+          {u"message"_s, Message},
+          {u"edited_message"_s, EditedMessage},
+          {u"channel_post"_s, ChannelPost},
+          {u"edited_channel_post"_s, EditedChannelPost},
+          {u"inline_query"_s, InlineQuery},
+          {u"chosen_inline_result"_s, ChosenInlineResult},
+          {u"callback_query"_s, CallbackQuery} };
 
       auto it_type = key_to_type.find(itr.key());
       if (it_type == key_to_type.cend()) {
         qWarning() << "Invalid type: " << itr.key();
-      } else {
-        type = it_type->second;
+        return;
       }
-      const QJsonObject oMessage = itr.value().toObject();
+      type = it_type->second;
+      const QJsonObject jo_message = itr.value().toObject();
       switch (type) {
       case Message:
       case EditedMessage:
       case ChannelPost:
       case EditedChannelPost:
         message = new TelegramBotMessage;
-        message->FromJson(oMessage);
+        message->FromJson(jo_message);
         break;
       case InlineQuery:
         inlineQuery = new TelegramBotInlineQuery;
-        inlineQuery->FromJson(oMessage);
+        inlineQuery->FromJson(jo_message);
         break;
       case ChosenInlineResult:
         chosenInlineResult = new TelegramBotChosenInlineResult;
-        chosenInlineResult->FromJson(oMessage);
+        chosenInlineResult->FromJson(jo_message);
         break;
       case CallbackQuery:
         callbackQuery = new TelegramBotCallbackQuery;
-        callbackQuery->FromJson(oMessage);
+        callbackQuery->FromJson(jo_message);
         message = &callbackQuery->message;
         break;
       }

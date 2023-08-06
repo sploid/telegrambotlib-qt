@@ -423,71 +423,71 @@ void TelegramBot::sendContact(QVariant chatId, QString phoneNumber, QString firs
     CallApiTemplate("sendContact", params, response);
 }
 
-/*
- * Message Puller
- */
-void TelegramBot::startMessagePulling(uint timeout, uint limit, TelegramPollMessageTypes messageTypes, long offset)
-{
-    // remove webhook
-    this->deleteWebhookResult();
+void TelegramBot::StartMessagePulling(uint timeout, uint limit, TelegramPollMessageTypes message_types, long offset) {
+  // remove webhook
+  deleteWebhookResult();
 
-    // build url params
-    this->pullParams.clear();
-    if(offset) this->pullParams.addQueryItem("offset", QString::number(offset));
-    else if(this->updateId) this->pullParams.addQueryItem("offset", QString::number(this->updateId));
-    this->pullParams.addQueryItem("limit",   QString::number(limit));
-    this->pullParams.addQueryItem("timeout", QString::number(timeout));
+  // build url params
+  pull_params_.clear();
+  if (offset) pull_params_.addQueryItem(u"offset"_s, QString::number(offset));
+  else if (update_id) pull_params_.addQueryItem(u"offset"_s, QString::number(update_id));
+  pull_params_.addQueryItem(u"limit"_s,   QString::number(limit));
+  pull_params_.addQueryItem(u"timeout"_s, QString::number(timeout));
 
-    // allowed updates
-    QStringList allowedUpdates;
-    if(static_cast<int>(messageTypes) > 0) {
-        if(messageTypes && TelegramPollMessageTypes::Message) allowedUpdates += "message";
-        if(messageTypes && TelegramPollMessageTypes::EditedMessage) allowedUpdates += "edited_message";
-        if(messageTypes && TelegramPollMessageTypes::ChannelPost) allowedUpdates += "channel_post";
-        if(messageTypes && TelegramPollMessageTypes::EditedChannelPost) allowedUpdates += "edited_channel_post";
-        if(messageTypes && TelegramPollMessageTypes::InlineQuery) allowedUpdates += "inline_query";
-        if(messageTypes && TelegramPollMessageTypes::ChoosenInlineQuery) allowedUpdates += "chosen_inline_result";
-        if(messageTypes && TelegramPollMessageTypes::CallbackQuery) allowedUpdates += "callback_query";
-    }
-    if(!allowedUpdates.isEmpty()) this->pullParams.addQueryItem("allowed_updates", "[\"" + allowedUpdates.join("\",\"") + "\"]");
+  // allowed updates
+  if (static_cast<int>(message_types) > 0) {
+    QStringList allowed_updates;
+    if (message_types && TelegramPollMessageTypes::Message) allowed_updates += u"message"_s;
+    if (message_types && TelegramPollMessageTypes::EditedMessage) allowed_updates += u"edited_message"_s;
+    if (message_types && TelegramPollMessageTypes::ChannelPost) allowed_updates += u"channel_post"_s;
+    if (message_types && TelegramPollMessageTypes::EditedChannelPost) allowed_updates += u"edited_channel_post"_s;
+    if (message_types && TelegramPollMessageTypes::InlineQuery) allowed_updates += u"inline_query"_s;
+    if (message_types && TelegramPollMessageTypes::ChoosenInlineQuery) allowed_updates += u"chosen_inline_result"_s;
+    if (message_types && TelegramPollMessageTypes::CallbackQuery) allowed_updates += u"callback_query"_s;
+    if (!allowed_updates.isEmpty()) pull_params_.addQueryItem(u"allowed_updates"_s, u"[\""_s + allowed_updates.join(u"\",\""_s) + u"\"]"_s);
+  }
 
-    // start pulling
-    this->pull();
+  Pull();
 }
 
-void TelegramBot::stopMessagePulling(bool instantly)
-{
-    this->pullParams.clear();
-    if(instantly && this->replyPull) this->replyPull->abort();
+void TelegramBot::StopMessagePulling(bool instantly) {
+  pull_params_.clear();
+  if (instantly && reply_pull_) {
+    reply_pull_->abort();
+    reply_pull_->deleteLater();
+    reply_pull_ = nullptr;
+  }
 }
 
-void TelegramBot::pull()
-{
-    // if we pull is disabled, exit
-    if(this->pullParams.isEmpty()) return;
+void TelegramBot::Pull() {
+  if (pull_params_.isEmpty()) {
+    qInfo() << "Pulling stopped";
+    return;
+  }
 
-    // cleanup
-    if(this->replyPull) this->replyPull->deleteLater();
+  if (reply_pull_) {
+    reply_pull_->deleteLater();
+    reply_pull_ = nullptr;
+  }
 
-    // call api
-    this->replyPull = this->callApi("getUpdates", this->pullParams, false);
-    QObject::connect(this->replyPull, &QNetworkReply::finished, this, &TelegramBot::handlePullResponse);
+  reply_pull_ = callApi(u"getUpdates"_s, pull_params_, false);
+  connect(reply_pull_, &QNetworkReply::finished, this, &TelegramBot::HandlePullResponse);
 }
 
-void TelegramBot::handlePullResponse()
-{
-    // remove update id from request
-    this->pullParams.removeQueryItem("offset");
-
-    // parse response
-    QByteArray data = this->replyPull->readAll();
-    parseMessage(data);
-
-    // add update id to request
-    if(this->updateId) this->pullParams.addQueryItem("offset", QString::number(this->updateId + 1));
-
-    // continue pulling
-    this->pull();
+void TelegramBot::HandlePullResponse() {
+  reply_pull_->deleteLater();
+  if (reply_pull_->error() != QNetworkReply::NoError) {
+    qWarning() << "Pull failed, error: " << reply_pull_->error();
+    reply_pull_ = nullptr;
+    Pull();
+    return;
+  }
+  pull_params_.removeQueryItem(u"offset"_s);
+  const QByteArray data = reply_pull_->readAll();
+  reply_pull_ = nullptr;
+  parseMessage(data);
+  if (update_id) pull_params_.addQueryItem(u"offset"_s, QString::number(update_id + 1));
+  Pull();
 }
 
 /*
@@ -631,7 +631,7 @@ void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
     updateMessage->FromJson(update);
 
     // save update id
-    updateId = updateMessage->updateId;
+    update_id = updateMessage->update_id;
 
     Q_EMIT NewMessage(updateMessage);
 
