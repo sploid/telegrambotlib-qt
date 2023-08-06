@@ -44,6 +44,44 @@ public:
     return true;
   }
 
+    template<typename T, typename std::enable_if<
+    std::is_same<
+      std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type
+    >::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull()) {
+      if (show_warnings) qWarning() << "Path not found: " << path;
+      return false;
+    }
+    const QVariant var_val{QVariant::fromValue(j_val)};
+    if (!var_val.canConvert<T>()) {
+      if (show_warnings) qWarning() << "Cannot convert json to type: " << path;
+      return false;
+    }
+    target = T();
+    target = var_val.value<T>();
+    return true;
+  }
+
+  template<typename T, typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || !j_val.isObject()) {
+      if (show_warnings) qWarning() << "Invalid path for object: " << path;
+      return false;
+    }
+
+    target = T();
+    if (!target->FromJson(j_val.toObject())) {
+      target.reset();
+      if (show_warnings) qWarning() << "Failed to parse object: " << path;
+      return false;
+    }
+
+    return true;
+  }
+
   template<typename T, typename std::enable_if<std::is_same<std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type>::value, bool>::type = true>
   static bool PathGet(const QJsonValue& data, const QString& path, QList<T>& target, bool show_warnings = true) {
     const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);

@@ -609,6 +609,7 @@ void TelegramBot::messageRouterRegister(QString startWith, QDelegate<bool(Telegr
  * Reponse Parser
  */
 void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
+  qDebug() << "PARSE: " << data;
   QJsonParseError jError;
   const QJsonObject oUpdate = QJsonDocument::fromJson(data, &jError).object();
 
@@ -627,27 +628,25 @@ void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
   for (const QJsonValue& result : singleMessage ? QJsonArray({oUpdate}) : oUpdate.value(u"result"_s).toArray()) {
     const QJsonObject update = result.toObject();
 
-    TelegramBotUpdate updateMessage(new TelegramBotUpdatePrivate);
-    if (!updateMessage->FromJson(update)) {
-      int t = 0;
-    }
+    TelegramBotUpdate update_message(new TelegramBotUpdatePrivate);
+    if (update_message->FromJson(update)) {
+      update_id = update_message->update_id;
 
-    // save update id
-    update_id = updateMessage->update_id;
+      Q_EMIT NewMessage(update_message);
 
-    Q_EMIT NewMessage(updateMessage);
-
-    // call message routes
-    const QString routeData = updateMessage->inlineQuery          ? updateMessage->inlineQuery->query :
-                              updateMessage->chosenInlineResult   ? updateMessage->chosenInlineResult->query :
-                              updateMessage->callbackQuery        ? updateMessage->callbackQuery->data :
-                              updateMessage->message              ? updateMessage->message->text : QString();
-    if (routeData.isNull()) continue;
-    for (auto itrRoute = messageRoutes.begin(); itrRoute != messageRoutes.end(); ++itrRoute) {
-      MessageRoute* route = *itrRoute;
-      if (route->type && updateMessage->type != updateMessage->type) continue;
-      if (!routeData.startsWith(route->startWith)) continue;
-      if (!route->delegate.invoke(updateMessage).first()) break;
+      const QString route_data = update_message->inlineQuery        ? update_message->inlineQuery->query :
+                                 update_message->chosenInlineResult ? update_message->chosenInlineResult->query :
+                                 update_message->callbackQuery      ? update_message->callbackQuery->data :
+                                 update_message->message            ? update_message->message->text : QString();
+      if (route_data.isNull()) continue;
+      for (auto itrRoute = messageRoutes.begin(); itrRoute != messageRoutes.end(); ++itrRoute) {
+        MessageRoute* route = *itrRoute;
+        if (route->type && update_message->type != update_message->type) continue;
+        if (!route_data.startsWith(route->startWith)) continue;
+        if (!route->delegate.invoke(update_message).first()) break;
+      }
+    } else {
+      qCritical() << "Failed to parse update message";
     }
   }
 }
