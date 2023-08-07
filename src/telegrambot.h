@@ -124,13 +124,13 @@ public:
   void messageRouterRegister(QString startWith, QDelegate<bool(TelegramBotUpdate)> delegate, TelegramBotMessageType type = TelegramBotMessageType::All);
 
 Q_SIGNALS:
-  void NewMessage(TelegramBotUpdate message);
+  void NewMessage(TelegramBotUpdate message, const QByteArray& data);
 
 private:
   void Pull();
   void HandlePullResponse();
 
-  void parseMessage(const QByteArray& data, bool singleMessage = false);
+  void parseMessage(const QByteArray& data, bool single_message = false);
 
   // webhook functions
   void handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response);

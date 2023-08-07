@@ -12,10 +12,13 @@ TelegramKeyboardRequest TelegramBot::ConstructInlineMenu(const QList<std::tuple<
   return keyboard;
 }
 
-TelegramBot::TelegramBot(QString apikey, QObject *parent) : QObject(parent), apiKey(apikey) { }
+TelegramBot::TelegramBot(QString apikey, QObject *parent)
+    : QObject(parent),
+      apiKey(apikey) {
+}
 
 TelegramBot::~TelegramBot() {
-    qDeleteAll(messageRoutes);
+  qDeleteAll(messageRoutes);
 }
 
 /*
@@ -605,48 +608,43 @@ void TelegramBot::messageRouterRegister(QString startWith, QDelegate<bool(Telegr
                                });
 }
 
-/*
- * Reponse Parser
- */
-void TelegramBot::parseMessage(const QByteArray& data, bool singleMessage) {
-  qDebug() << "PARSE: " << data;
-  QJsonParseError jError;
-  const QJsonObject oUpdate = QJsonDocument::fromJson(data, &jError).object();
+void TelegramBot::parseMessage(const QByteArray& data, bool single_message) {
+  QJsonParseError j_error;
+  const QJsonObject jo_update = QJsonDocument::fromJson(data, &j_error).object();
 
-  if (jError.error != QJsonParseError::NoError) {
-    qWarning("TelegramBot::parseMessage - Parse Error: %s", qPrintable(jError.errorString()));
+  if (j_error.error != QJsonParseError::NoError) {
+    qWarning() << "TelegramBot::parseMessage - Parse Error: " << j_error.errorString() << data.left(1024);
     return;
   }
 
-  if (!singleMessage && !JsonHelper::PathGet(oUpdate, u"ok"_s).toBool()) {
-    qWarning("TelegramBot::parseMessage - Receive Error: %i - %s", JsonHelper::PathGet(oUpdate, "error_code").toInt(),
-             qPrintable(JsonHelper::PathGet(oUpdate, "description").toString()));
+  if (!single_message && !JsonHelper::PathGet(jo_update, u"ok"_s).toBool()) {
+    qWarning() << "TelegramBot::parseMessage - Receive Error: " << JsonHelper::PathGet(jo_update, u"error_code"_s).toInt()
+               << JsonHelper::PathGet(jo_update, "description").toString() << data.left(1024);
     return;
   }
 
-  // loop results
-  for (const QJsonValue& result : singleMessage ? QJsonArray({oUpdate}) : oUpdate.value(u"result"_s).toArray()) {
+  for (const QJsonValue& result : single_message ? QJsonArray({jo_update}) : jo_update.value(u"result"_s).toArray()) {
     const QJsonObject update = result.toObject();
 
     TelegramBotUpdate update_message(new TelegramBotUpdatePrivate);
     if (update_message->FromJson(update)) {
       update_id = update_message->update_id;
 
-      Q_EMIT NewMessage(update_message);
+      Q_EMIT NewMessage(update_message, data);
 
       const QString route_data = update_message->inlineQuery        ? update_message->inlineQuery->query :
                                  update_message->chosenInlineResult ? update_message->chosenInlineResult->query :
                                  update_message->callbackQuery      ? update_message->callbackQuery->data :
                                  update_message->message            ? update_message->message->text : QString();
       if (route_data.isNull()) continue;
-      for (auto itrRoute = messageRoutes.begin(); itrRoute != messageRoutes.end(); ++itrRoute) {
-        MessageRoute* route = *itrRoute;
+      for (auto itr_route = messageRoutes.begin(); itr_route != messageRoutes.end(); ++itr_route) {
+        MessageRoute* route = *itr_route;
         if (route->type && update_message->type != update_message->type) continue;
         if (!route_data.startsWith(route->startWith)) continue;
         if (!route->delegate.invoke(update_message).first()) break;
       }
     } else {
-      qCritical() << "Failed to parse update message";
+      qCritical() << "Failed to parse update message: " << data.left(1024);
     }
   }
 }
