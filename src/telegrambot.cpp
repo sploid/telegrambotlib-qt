@@ -170,7 +170,7 @@ void TelegramBot::OnSendFinished(bool delete_on_finish, const std::optional<std:
   }
 
   if (reply->error() != QNetworkReply::NoError) {
-    qCritical() << "SendMessage failed, params: " << reply->error() << reply->url();
+    qCritical() << "SendMessage failed, params: " << reply->error() << reply->url() << reply->readAll();
     return;
   }
 
@@ -445,8 +445,26 @@ void TelegramBot::StartMessagePulling(uint timeout, uint limit, TelegramPollMess
   pull_params_.clear();
   if (offset) pull_params_.addQueryItem(u"offset"_s, QString::number(offset));
   else if (update_id) pull_params_.addQueryItem(u"offset"_s, QString::number(update_id));
-  pull_params_.addQueryItem(u"limit"_s,   QString::number(limit));
+  pull_params_.addQueryItem(u"limit"_s, QString::number(limit));
   pull_params_.addQueryItem(u"timeout"_s, QString::number(timeout));
+  if (!pull_freeze_guard_) {
+    pull_freeze_guard_ = new QTimer(this);
+    pull_freeze_guard_->setSingleShot(true);
+  }
+  pull_freeze_guard_->setInterval(2 * timeout * 1000);
+  connect(pull_freeze_guard_, &QTimer::timeout, this,
+          [this] {
+            if (!reply_pull_) {
+              qCritical() << "Invalid emit of timeout";
+              return;
+            }
+
+            reply_pull_->disconnect(this);
+            reply_pull_->abort();
+            reply_pull_->deleteLater();
+            reply_pull_ = nullptr;
+            Pull();
+          });
 
   // allowed updates
   if (static_cast<int>(message_types) > 0) {
@@ -467,9 +485,16 @@ void TelegramBot::StartMessagePulling(uint timeout, uint limit, TelegramPollMess
 void TelegramBot::StopMessagePulling(bool instantly) {
   pull_params_.clear();
   if (instantly && reply_pull_) {
+    reply_pull_->disconnect(this);
     reply_pull_->abort();
     reply_pull_->deleteLater();
     reply_pull_ = nullptr;
+  }
+  if (pull_freeze_guard_) {
+    pull_freeze_guard_->disconnect(this);
+    pull_freeze_guard_->stop();
+    pull_freeze_guard_->deleteLater();
+    pull_freeze_guard_ = nullptr;
   }
 }
 
@@ -482,10 +507,12 @@ void TelegramBot::Pull() {
   qInfo() << "Call 'getUpdates'";
   reply_pull_ = CallApi(u"getUpdates"_s, pull_params_, false);
   connect(reply_pull_, &QNetworkReply::finished, this, &TelegramBot::HandlePullResponse);
+  pull_freeze_guard_->start();
 }
 
 void TelegramBot::HandlePullResponse() {
   qInfo() << "Received 'getUpdates'";
+  pull_freeze_guard_->stop();
   reply_pull_->deleteLater();
   if (reply_pull_->error() != QNetworkReply::NoError) {
     qWarning() << "Pull failed, error: " << reply_pull_->error();

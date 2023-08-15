@@ -156,6 +156,7 @@ private:
 
   // message puller
   QNetworkReply* reply_pull_{nullptr};
+  QTimer* pull_freeze_guard_{};
   QUrlQuery pull_params_;
 
   // httpserver webhook

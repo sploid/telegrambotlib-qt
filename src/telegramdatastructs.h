@@ -95,7 +95,7 @@ struct TelegramBotWebHookInfo : public TelegramBotObject {
 
 // TelegramBotUser - This object represents a Telegram user or bot.
 struct TelegramBotUser : public TelegramBotObject {
-  qint32 id; // Unique identifier for this user or bot
+  qint64 id; // Unique identifier for this user or bot
   bool is_bot{false};
   QString first_name; // User‘s or bot’s first name
   std::optional<QString> last_name; // Optional. User‘s or bot’s last name
@@ -344,7 +344,7 @@ struct TelegramBotContact : public TelegramBotObject {
   QString phoneNumber; // Contact's phone number
   QString firstName; // Contact's first name
   QString lastName; // Optional. Contact's last name
-  qint32 userId{}; // Optional. Contact's user identifier in Telegram
+  qint64 userId{}; // Optional. Contact's user identifier in Telegram
 
   bool FromJson(const QJsonObject& object) override {
     JsonHelper::PathGet(object, u"last_name"_s, lastName, false);
@@ -426,7 +426,7 @@ struct TelegramBotChatMember : public TelegramBotObject {
 
 // TelegramBotResponseParameters - Contains information about why a request was unsuccessfull.
 struct TelegramBotResponseParameters : public TelegramBotObject {
-  qint32 migrateToChatId{}; // Optional. The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier.
+  qint64 migrateToChatId{}; // Optional. The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier.
   qint32 retryAfter{}; // Optional. In case of exceeding flood control, the number of seconds left to wait before the request can be repeated
 
   bool FromJson(const QJsonObject& object) override {
@@ -437,15 +437,15 @@ struct TelegramBotResponseParameters : public TelegramBotObject {
 };
 
 #define TELEGRAMBOTMESSAGE_FIELDS \
-    qint32 messageId{}; /* Unique message identifier inside this chat */\
+    qint64 messageId{}; /* Unique message identifier inside this chat */\
     std::optional<TelegramBotUser> from; /* Optional. Sender, can be empty for messages sent to channels */\
-    qint32 date{}; /* Date the message was sent in Unix time */\
+    qint64 date{}; /* Date the message was sent in Unix time */\
     TelegramBotChat chat; /* Conversation the message belongs to */\
     TelegramBotUser forwardFrom; /* Optional. For forwarded messages, sender of the original message */\
     TelegramBotChat forwardFromChat; /* Optional. For messages forwarded from a channel, information about the original channel */\
-    qint32 forwardFromMessageId{}; /* Optional. For forwarded channel posts, identifier of the original message in the channel */\
-    qint32 forwardDate{}; /* Optional. For forwarded messages, date the original message was sent in Unix time */\
-    qint32 editDate{}; /* Optional. Date the message was last edited in Unix time */\
+    qint64 forwardFromMessageId{}; /* Optional. For forwarded channel posts, identifier of the original message in the channel */\
+    qint64 forwardDate{}; /* Optional. For forwarded messages, date the original message was sent in Unix time */\
+    qint64 editDate{}; /* Optional. Date the message was last edited in Unix time */\
     QString text; /* Optional. For text messages, the actual UTF-8 text of the message, 0-4096 characters. */\
     QList<TelegramBotMessageEntity> entities; /* Optional. For text messages, special entities like usernames, URLs, bot commands, etc. that appear in the text */\
     TelegramBotAudio audio; /* Optional. Message is an audio file, information about the file */\
@@ -467,8 +467,8 @@ struct TelegramBotResponseParameters : public TelegramBotObject {
     bool groupChatCreated{false}; /* Optional. Service message: the group has been created */\
     bool supergroupChatCreated{false}; /* Optional. Service message: the supergroup has been created. This field can‘t be received in a message coming through updates, because bot can’t be a member of a supergroup when it is created. It can only be found in reply_to_message if someone replies to a very first message in a directly created supergroup. */\
     bool channelChatCreated{false}; /* Optional. Service message: the channel has been created. This field can‘t be received in a message coming through updates, because bot can’t be a member of a channel when it is created. It can only be found in reply_to_message if someone replies to a very first message in a channel. */\
-    qint32 migrateToChatId{}; /* Optional. The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */\
-    qint32 migrateFromChatId{}; /* Optional. The supergroup has been migrated from a group with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */\
+    qint64 migrateToChatId{}; /* Optional. The group has been migrated to a supergroup with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */\
+    qint64 migrateFromChatId{}; /* Optional. The supergroup has been migrated from a group with the specified identifier. This number may be greater than 32 bits and some programming languages may have difficulty/silent defects in interpreting it. But it is smaller than 52 bits, so a signed 64 bit integer or double-precision float type are safe for storing this identifier. */\
 
 #define TELEGRAMBOTMESSAGE_FIELD_PARSING \
     JsonHelper::PathGet(object, u"from"_s, from, false); \
