@@ -86,8 +86,7 @@ public:
   int getChatMembersCount(const QVariant& chat_id);
   TelegramBotChatMember getChatMember(QVariant chatId, qint32 userId);
 
-  // Callback Query Functions
-  void answerCallbackQuery(QString callbackQueryId, QString text = QString(), bool showAlert = false, int cacheTime = 0, QString url = QString(), bool* response = 0);
+  void AnswerCallbackQuery(const QString& callback_query_id, const QString& text = QString(), bool show_alert = false, int cache_time = 0, const QString& url = QString());
 
   // Message Functions
   QNetworkReply* SendMessage(const QVariant& chat_id, const QString& text, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag,
@@ -129,6 +128,7 @@ Q_SIGNALS:
 private:
   void Pull();
   void HandlePullResponse();
+  void OnSendFinished(bool delete_on_finish, const std::optional<std::function<void(const QJsonObject&)>>& call_on_ok);
 
   void parseMessage(const QByteArray& data, bool single_message = false);
 
@@ -141,7 +141,7 @@ private:
   template<typename T>
   typename std::enable_if<!std::is_base_of<TelegramBotObject, T>::value>::type CallApiTemplate(QString method, QUrlQuery params = QUrlQuery(), T* response = 0, QHttpMultiPart* multiPart = 0);
 
-  QNetworkReply* callApi(QString method, QUrlQuery params = QUrlQuery(), bool deleteOnFinish = true, QHttpMultiPart* multiPart = 0);
+  QNetworkReply* CallApi(const QString& method, const QUrlQuery& params = QUrlQuery(), bool deleteOnFinish = true, QHttpMultiPart* multiPart = 0);
   QJsonObject callApiJson(QString method, QUrlQuery params = QUrlQuery(), QHttpMultiPart* multiPart = 0);
 
   // helpers
