@@ -1,84 +1,157 @@
-#ifndef JSONHELPER_H
-#define JSONHELPER_H
+#pragma once
 
-#include <QVariant>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonArray>
+#include "common.h"
 
-class JsonHelper
-{
-    public:
-        // main json parser
-        template<typename T>
-        static bool jsonPathGet(QJsonValue data, QString path, T& target, bool showWarnings = true)
-        {
-            // get value and exit if value is invalid, or is not convertable to T
-            QVariant jPathValue = JsonHelper::jsonPathGetImpl(data, path, showWarnings);
-            target = jPathValue.value<T>();
-
-            // return true if convert was successfull otherwise false
-            return jPathValue != QJsonValue(QJsonValue::Undefined) && !jPathValue.canConvert<T>();
-        }
-        static inline QVariant jsonPathGet(QJsonValue data, QString path) { return JsonHelper::jsonPathGetImpl(data, path, true); }
-        static inline QVariant jsonPathGetSilent(QJsonValue data, QString path) { return JsonHelper::jsonPathGetImpl(data, path, false); }
-
-    private:
-        static QVariant jsonPathGetImpl(QJsonValue data, QString path, bool showWarnings);
+struct BOT_EXPORT TelegramBotObject {
+  virtual bool FromJson(const QJsonObject& object) = 0;
+  virtual ~TelegramBotObject() {}
 };
 
-template<typename T, class Enable = void>
-class JsonHelperT
-{
-    public:
-        static inline bool jsonPathGet(QJsonValue data, QString path, T& target, bool showWarnings = true)
-        {
-            return JsonHelper::jsonPathGet(data, path, target, showWarnings);
-        }
-        static bool jsonPathGetArray(QJsonValue data, QString path, QList<T>& target, bool showWarnings = true)
-        {
-            QJsonValue value = showWarnings ? JsonHelper::jsonPathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
-            if(value.isArray()) {
-                QJsonArray jArray = value.toArray();
-                for(auto itr = jArray.begin(); itr != jArray.end(); itr++) {
-                    JsonHelper::jsonPathGet(*itr, QString::number(itr.i), *target.insert(target.end(), T{}), showWarnings);
-                }
-            } else if(value.isObject()) {
-                QJsonObject jObject = value.toObject();
-                for(auto itr = jObject.begin(); itr != jObject.end(); itr++) {
-                    JsonHelper::jsonPathGet(*itr, itr.key(), *target.insert(target.end(), T{}), showWarnings);
-                }
-            } else {
-                return false;
-            }
-            return true;
-        }
-        static bool jsonPathGetArrayArray(QJsonValue data, QString path, QList<QList<T>>& target, bool showWarnings = true)
-        {
-            QJsonValue value = showWarnings ? JsonHelper::jsonPathGet(data, path).toJsonValue() : JsonHelper::jsonPathGetSilent(data, path).toJsonValue();
-            if(value.isArray()) {
-                QJsonArray jArray = value.toArray();
-                for(auto itr = jArray.begin(); itr != jArray.end(); itr++) {
-                    JsonHelperT::jsonPathGetArray(*itr, QString::number(itr.i), *target.insert(target.end(), QList<T>()), showWarnings);
-                }
-            } else if(value.isObject()) {
-                QJsonObject jObject = value.toObject();
-                for(auto itr = jObject.begin(); itr != jObject.end(); itr++) {
-                    JsonHelperT::jsonPathGetArray(*itr, itr.key(), *target.insert(target.end(), QList<T>()), showWarnings);
-                }
-            } else {
-                return false;
-            }
-            return true;
-        }
-        static inline QVariant jsonPathGet(QJsonValue data, QString path)
-        {
-            return JsonHelper::jsonPathGet(data, path);
-        }
-        static inline QVariant jsonPathGetSilent(QJsonValue data, QString path)
-        {
-            return JsonHelper::jsonPathGetSilent(data, path);
-        }
-};
+class BOT_EXPORT JsonHelper {
+public:
+  template<typename T, typename std::enable_if<
+    std::is_same<
+      std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type
+    >::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, T& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull()) {
+      if (show_warnings) qWarning() << "Path not found: " << path;
+      return false;
+    }
+    const QVariant var_val{QVariant::fromValue(j_val)};
+    if (!var_val.canConvert<T>()) {
+      if (show_warnings) qWarning() << "Cannot convert json to type: " << path;
+      return false;
+    }
+    target = var_val.value<T>();
+    return true;
+  }
 
-#endif // JSONHELPER_H
+  template<typename T, typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, T& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || !j_val.isObject()) {
+      if (show_warnings) qWarning() << "Invalid path for object: " << path;
+      return false;
+    }
+
+    if (!target.FromJson(j_val.toObject())) {
+      if (show_warnings) qWarning() << "Failed to parse object: " << path;
+      return false;
+    }
+
+    return true;
+  }
+
+    template<typename T, typename std::enable_if<
+    std::is_same<
+      std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type
+    >::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull()) {
+      if (show_warnings) qWarning() << "Path not found: " << path;
+      return false;
+    }
+    const QVariant var_val{QVariant::fromValue(j_val)};
+    if (!var_val.canConvert<T>()) {
+      if (show_warnings) qWarning() << "Cannot convert json to type: " << path;
+      return false;
+    }
+    target = T();
+    target = var_val.value<T>();
+    return true;
+  }
+
+  template<typename T, typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, std::optional<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || !j_val.isObject()) {
+      if (show_warnings) qWarning() << "Invalid path for object: " << path;
+      return false;
+    }
+
+    target = T();
+    if (!target->FromJson(j_val.toObject())) {
+      target.reset();
+      if (show_warnings) qWarning() << "Failed to parse object: " << path;
+      return false;
+    }
+
+    return true;
+  }
+
+  template<typename T, typename std::enable_if<std::is_same<std::bool_constant<true>, typename std::negation<std::is_base_of<TelegramBotObject, T>>::type>::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, QList<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || (!j_val.isArray() && !j_val.isObject())) {
+      if (show_warnings) qWarning() << "Path not found or invalid: " << path;
+      return false;
+    }
+    if (j_val.isArray()) {
+      const QJsonArray j_array = j_val.toArray();
+      int idx{0};
+      for (auto itr = j_array.begin(); itr != j_array.end(); itr++) {
+        if (!JsonHelper::PathGet<T>(*itr, QString::number(idx++), *target.insert(target.end(), T{}), show_warnings) && show_warnings) {
+          if (show_warnings) qWarning() << "Failed to parse index in path: " << path << idx;
+          return false;
+        }
+      }
+      return true;
+    } else if (j_val.isObject()) {
+      const QJsonObject j_object = j_val.toObject();
+      for (auto itr = j_object.begin(); itr != j_object.end(); itr++) {
+        if (!JsonHelper::PathGet<T>(*itr, itr.key(), *target.insert(target.end(), T{}), show_warnings) && show_warnings) {
+          if (show_warnings) qWarning() << "Failed to object in path: " << path << itr.key();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    qWarning() << "Invalid JSON object: " << path;
+    return false;
+  }
+
+  template<typename T, typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value, bool>::type = true>
+  static bool PathGet(const QJsonValue& data, const QString& path, QList<T>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || !j_val.isArray()) {
+      if (show_warnings) qWarning() << "Path not found or invalid: " << path;
+      return false;
+    }
+    const QJsonArray j_arr{j_val.toArray()};
+    for (auto itr = j_arr.begin(); itr != j_arr.end(); ++itr) {
+      if (!JsonHelper::PathGet<T>(*itr, u""_s, *target.insert(target.end(), T{})) && show_warnings) {
+        qWarning() << "Failed to parse " << path;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  template<typename T, typename std::enable_if<std::is_base_of<TelegramBotObject, T>::value, bool>::type = true>
+  static inline bool PathGet(const QJsonValue& data, const QString& path, QList<QList<T>>& target, bool show_warnings = true) {
+    const QJsonValue j_val = JsonHelper::PathGetImplJ(data, path, show_warnings);
+    if (j_val.isUndefined() || j_val.isNull() || !j_val.isArray()) {
+      if (show_warnings) qWarning() << "Path not found or invalid: " << path;
+      return false;
+    }
+    const QJsonArray j_array{j_val.toArray()};
+    for (auto itr = j_array.begin(); itr != j_array.end(); itr++) {
+      if (!JsonHelper::PathGet(*itr, u""_s, *target.insert(target.end(), QList<T>())) && show_warnings) {
+        qWarning() << "Failed to parse " << path;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static QJsonValue PathGet(const QJsonValue& data, const QString& path) {
+    return JsonHelper::PathGetImplJ(data, path, true);
+  }
+
+private:
+  static QJsonValue PathGetImplJ(QJsonValue data, const QString& path, bool show_warnings);
+};

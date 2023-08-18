@@ -1,17 +1,9 @@
-#ifndef SSLSERVER_H
-#define SSLSERVER_H
-
-#include <QTcpServer>
-#include <QSslSocket>
-#include <QFile>
-#include <QSslCertificate>
-#include <QSslKey>
-#include <QSslConfiguration>
+#pragma once
 
 class SSLServer : public QTcpServer
 {
     Q_OBJECT
-    signals:
+    Q_SIGNALS:
         void connectionReady();
 
     public:
@@ -46,5 +38,3 @@ class SSLServer : public QTcpServer
         // white list
         QList<QPair<QHostAddress, int>> whiteListHosts;
 };
-
-#endif // SSLSERVER_H

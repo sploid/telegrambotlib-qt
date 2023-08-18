@@ -1,11 +1,5 @@
-#ifndef HTTPSERVER_H
-#define HTTPSERVER_H
+#pragma once
 
-#include <QObject>
-#include <QNetworkRequest>
-#include <QSharedPointer>
-#include <QMap>
-#include <QString>
 #include "sslserver.h"
 #include "qdelegate.h"
 
@@ -203,5 +197,3 @@ class HttpServer : public SSLServer
         QMap<QString, QMultiMap<QString, QDelegate<void(HttpServerRequest,HttpServerResponse)>>> rewriteRules;
         QMap<QTcpSocket*, HttpServerRequest> pendingRequests;
 };
-
-#endif // HTTPSERVER_H
