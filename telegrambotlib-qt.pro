@@ -20,15 +20,17 @@ DEFINES += \
   _WINDOWS
 
 SOURCES += \
-  $$PWD/src/telegrambot.cpp \
   $$PWD/src/jsonhelper.cpp \
+  $$PWD/src/outgoing_message.cpp \
+  $$PWD/src/telegrambot.cpp \
   $$PWD/modules/sslserver/sslserver.cpp \
   $$PWD/modules/httpserver/httpserver.cpp
 
 HEADERS += \
   $$PWD/src/common.h \
-  $$PWD/src/telegrambot.h \
   $$PWD/src/jsonhelper.h \
+  $$PWD/src/outgoing_message.h \
+  $$PWD/src/telegrambot.h \
   $$PWD/src/telegramdatastructs.h \
   $$PWD/modules/sslserver/sslserver.h \
   $$PWD/modules/httpserver/httpserver.h

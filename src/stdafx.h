@@ -1,39 +1,32 @@
 #pragma once
 
-#include <QVariant>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QJsonArray>
-
 #include <QDebug>
-#include <QTimer>
-
-#include <QObject>
 #include <QEventLoop>
 #include <QFile>
 #include <QFileInfo>
-#include <QMimeDatabase>
-
-#include <QUrlQuery>
-
-#include <QNetworkReply>
-#include <QNetworkAccessManager>
 #include <QHttpMultiPart>
-
+#include <QJsonArray>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QJsonParseError>
-
-#include <QNetworkRequest>
-#include <QSharedPointer>
-#include <QMap>
-#include <QString>
-
-#include <QTcpServer>
-#include <QSslSocket>
-#include <QFile>
-#include <QSslCertificate>
-#include <QSslKey>
-#include <QSslConfiguration>
+#include <QJsonValue>
 #include <QList>
+#include <QMap>
+#include <QMimeDatabase>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QQueue>
+#include <QSharedPointer>
+#include <QSslCertificate>
+#include <QSslConfiguration>
+#include <QSslKey>
+#include <QSslSocket>
+#include <QString>
+#include <QTcpServer>
+#include <QTimer>
+#include <QUrlQuery>
+#include <QVariant>
 
 using namespace Qt::Literals::StringLiterals;
