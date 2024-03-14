@@ -48,6 +48,7 @@ enum TelegramBotMessageType {
   InlineQuery         = 1 << 4,
   ChosenInlineResult  = 1 << 5,
   CallbackQuery       = 1 << 6,
+  MyChatMember        = 1 << 7,
   All                 = (2^7) - 1
 };
 
@@ -1131,6 +1132,21 @@ struct TelegramBotChosenInlineResult : public TelegramBotObject {
   }
 };
 
+struct ChatMemberUpdated : public TelegramBotObject {
+  TelegramBotChat chat;
+  TelegramBotUser from;
+  qint64 date{};
+  TelegramBotChatMember old_chat_member;
+  TelegramBotChatMember new_chat_member;
+  bool FromJson(const QJsonObject& object) override {
+    return JsonHelper::PathGet(object, u"chat"_s, chat) &&
+           JsonHelper::PathGet(object, u"from"_s, from) &&
+           JsonHelper::PathGet(object, u"date"_s, date) &&
+           JsonHelper::PathGet(object, u"old_chat_member"_s, old_chat_member) &&
+           JsonHelper::PathGet(object, u"new_chat_member"_s, new_chat_member);
+  }
+};
+
 // This object represents an incoming update.
 struct TelegramBotUpdatePrivate : public TelegramBotObject {
   TelegramBotMessageType type{Undefined};
@@ -1143,12 +1159,14 @@ struct TelegramBotUpdatePrivate : public TelegramBotObject {
   TelegramBotInlineQuery* inlineQuery{};
   TelegramBotChosenInlineResult* chosenInlineResult{};
   TelegramBotCallbackQuery* callbackQuery{};
+  ChatMemberUpdated* chat_member_updated{};
 
   ~TelegramBotUpdatePrivate() {
     if (!callbackQuery && message) delete message;
     if (inlineQuery) delete inlineQuery;
     if (chosenInlineResult) delete chosenInlineResult;
     if (callbackQuery) delete callbackQuery;
+    if (chat_member_updated) delete chat_member_updated;
   }
 
   bool FromJson(const QJsonObject& object) override {
@@ -1159,7 +1177,8 @@ struct TelegramBotUpdatePrivate : public TelegramBotObject {
         {u"edited_channel_post"_s, EditedChannelPost},
         {u"inline_query"_s, InlineQuery},
         {u"chosen_inline_result"_s, ChosenInlineResult},
-        {u"callback_query"_s, CallbackQuery} };
+        {u"callback_query"_s, CallbackQuery},
+        {u"my_chat_member"_s, MyChatMember}};
 
     bool found_and_parsed_type{false};
     for (auto itr = object.begin(); itr != object.end(); ++itr) {
@@ -1206,6 +1225,13 @@ struct TelegramBotUpdatePrivate : public TelegramBotObject {
             return false;
           }
           message = &callbackQuery->message;
+          break;
+        case MyChatMember:
+          chat_member_updated = new ChatMemberUpdated;
+          if (!(found_and_parsed_type = chat_member_updated->FromJson(jo_message))) {
+            qCritical() << "Failed to parse ChatMemberUpdated";
+            return false;
+          }
           break;
         }
       }

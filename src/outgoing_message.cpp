@@ -17,12 +17,14 @@ void OutgoingMessage::SetReply(QNetworkReply* reply) {
 
 void OutgoingMessage::OnSendFinished() {
   QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-  reply->deleteLater();
   if (!reply) {
     qCritical() << "Invalid call of finish";
     return;
   }
 
+  qInfo() << "Received finish: " << reply;
+
+  reply->deleteLater();
   if (reply->error() != QNetworkReply::NoError) {
     const QVariant http_status_code = reply->attribute( QNetworkRequest::HttpStatusCodeAttribute );
     if (http_status_code.isValid()) {
