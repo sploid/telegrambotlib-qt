@@ -95,16 +95,7 @@ public:
   void deleteMessage(QVariant chatId, qint32 messageId);
 
   // Content Functions
-  void sendPhoto(QVariant chatId, QVariant photo, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  OutgoingMessage* SendAudio(qint64 chat_id, const QVariant& audio, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendDocument(QVariant chatId, QVariant document, QString caption = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendSticker(QVariant chatId, QVariant sticker, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendVideo(QVariant chatId, QVariant video, QString caption = QString(), int duration = -1, int width = -1, int height = -1, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void SendVoice(QVariant chat_id, QVariant voice, QString caption = QString(), int duration = -1, int reply_to_message_id = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendVideoNote(QVariant chatId, QVariant videoNote, int length = -1, int duration = -1, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendLocation(QVariant chatId, double latitude, double longitude, int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendVenue(QVariant chatId, double latitude, double longitude, QString title, QString address, QString foursquareId = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
-  void sendContact(QVariant chatId, QString phoneNumber, QString firstName, QString lastName = QString(), int replyToMessageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
+  OutgoingMessage* SendAudio(qint64 chat_id, const QString& audio_file_path, const QString& caption = QString(), const QString& performer = QString(), const QString& title = QString(), int duration = -1, int reply_to_messageId = 0, TelegramFlags flags = TelegramFlags::NoFlag, TelegramKeyboardRequest keyboard = TelegramKeyboardRequest());
 
   // Message Puller
   void StartMessagePulling(uint timeout = 10, uint limit = 100, TelegramPollMessageTypes messageTypes = TelegramPollMessageTypes::All, long offset = 0);
@@ -130,19 +121,20 @@ private:
   // webhook functions
   void handleServerWebhookResponse(HttpServerRequest request, HttpServerResponse response);
 
-  QNetworkReply* CallApi(const QString& method, const QUrlQuery& params = QUrlQuery(), bool delete_on_finish = true, QHttpMultiPart* multi_part = 0);
+  QNetworkReply* CallApi(const QString& method, const QUrlQuery& params = QUrlQuery(), bool delete_on_finish = true, QHttpMultiPart* multi_part = 0, int timeout = 3000);
   OutgoingMessage* CreateOutgoingMessage(const std::optional<qint64>& chat_id, const QString& method, const QUrlQuery& params = QUrlQuery(), QHttpMultiPart* multi_part = 0);
   void SendOutgoingMessage(OutgoingMessage* om);
 
   // helpers
-  QHttpMultiPart* CreateUploadFile(const QString& name, const QString& file_name, const QByteArray& content, bool detect_mime_type = false, QHttpMultiPart* multi_part = 0);
+  QHttpMultiPart* CreateUploadFile(const QString& name, const QString& file_name, const QByteArray& content, bool detect_mime_type = false);
   void HandleReplyMarkup(QUrlQuery& params, TelegramFlags flags, const TelegramKeyboardRequest& keyboard);
-  QHttpMultiPart* HandleFile(const QString& fieldName, const QVariant& file, QUrlQuery& params, QHttpMultiPart* multiPart = 0, TelegramFlags flags = TelegramFlags::NoFlag);
+  QHttpMultiPart* HandleFile(const QString& fieldName, const QString& file_path, QUrlQuery& params, TelegramFlags flags = TelegramFlags::NoFlag);
 
-  // global data
-  QNetworkAccessManager aManager;
-  QString apiKey;
-  qint64 update_id{0};
+  void PrintQueue() const;
+
+  QNetworkAccessManager net_man_;
+  const QString api_key_;
+  qint64 update_id_{0};
 
   // message puller
   QNetworkReply* reply_pull_{nullptr};

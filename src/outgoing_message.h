@@ -14,8 +14,8 @@ public:
 
 Q_SIGNALS:
   void WasSend(bool error, const QJsonObject& jo);
-  void Finished();
-  void ResendMe();
+  void Finished(OutgoingMessage* om);
+  void ResendMe(OutgoingMessage* om);
 
 private:
   const int kDefCountTriesToSend{3};

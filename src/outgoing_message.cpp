@@ -72,10 +72,10 @@ void OutgoingMessage::OnFail() {
     return;
   }
 
-  QTimer::singleShot(kDefIntervalBetweenSend, this, &OutgoingMessage::ResendMe);
+  QTimer::singleShot(kDefIntervalBetweenSend, this, [this] { Q_EMIT ResendMe(this); });
 }
 
 void OutgoingMessage::EmitWasSendAndFinished(bool error, const QJsonObject& jo) {
   Q_EMIT WasSend(error, jo);
-  Q_EMIT Finished();
+  Q_EMIT Finished(this);
 }
